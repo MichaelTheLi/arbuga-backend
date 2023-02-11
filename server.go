@@ -32,4 +32,7 @@ func main() {
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, myHandler))
+
+	// TODO Authentication https://gqlgen.com/recipes/authentication/
+	// TODO Correct CORS https://gqlgen.com/recipes/cors/
 }
