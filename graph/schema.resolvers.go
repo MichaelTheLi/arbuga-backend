@@ -39,7 +39,7 @@ func (r *mutationResolver) Login(ctx context.Context, login string, password str
 		}
 		r.users = append(r.users, user)
 	}
-	r.me = user
+	r.me = user // TODO Shared state for all the clients, bad-bad-bad
 	return user, nil
 }
 
