@@ -54,5 +54,10 @@ type Query {
 }
 
 type Mutation {
-  login(login: String!, password: String!): User
+  login(login: String!, password: String!): LoginResult
+}
+
+type LoginResult {
+  user: User
+  token: String
 }

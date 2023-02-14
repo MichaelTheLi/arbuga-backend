@@ -43,6 +43,11 @@ type EcosystemAnalysisMessage struct {
 	Status      AnalysisStatus `json:"status"`
 }
 
+type LoginResult struct {
+	User  *User   `json:"user"`
+	Token *string `json:"token"`
+}
+
 type AnalysisStatus string
 
 const (

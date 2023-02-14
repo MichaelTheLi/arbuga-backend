@@ -79,6 +79,11 @@ type ComplexityRoot struct {
 		Status      func(childComplexity int) int
 	}
 
+	LoginResult struct {
+		Token func(childComplexity int) int
+		User  func(childComplexity int) int
+	}
+
 	Mutation struct {
 		Login func(childComplexity int, login string, password string) int
 	}
@@ -99,7 +104,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	Login(ctx context.Context, login string, password string) (*model.User, error)
+	Login(ctx context.Context, login string, password string) (*model.LoginResult, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
@@ -261,6 +266,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.EcosystemAnalysisMessage.Status(childComplexity), true
+
+	case "LoginResult.token":
+		if e.complexity.LoginResult.Token == nil {
+			break
+		}
+
+		return e.complexity.LoginResult.Token(childComplexity), true
+
+	case "LoginResult.user":
+		if e.complexity.LoginResult.User == nil {
+			break
+		}
+
+		return e.complexity.LoginResult.User(childComplexity), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -1444,6 +1463,100 @@ func (ec *executionContext) fieldContext_EcosystemAnalysisMessage_status(ctx con
 	return fc, nil
 }
 
+func (ec *executionContext) _LoginResult_user(ctx context.Context, field graphql.CollectedField, obj *model.LoginResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginResult_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginResult_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "login":
+				return ec.fieldContext_User_login(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "ecosystems":
+				return ec.fieldContext_User_ecosystems(ctx, field)
+			case "ecosystem":
+				return ec.fieldContext_User_ecosystem(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoginResult_token(ctx context.Context, field graphql.CollectedField, obj *model.LoginResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginResult_token(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Token, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginResult_token(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_login(ctx, field)
 	if err != nil {
@@ -1466,9 +1579,9 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*model.LoginResult)
 	fc.Result = res
-	return ec.marshalOUser2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOLoginResult2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐLoginResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1479,18 +1592,12 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "login":
-				return ec.fieldContext_User_login(ctx, field)
-			case "name":
-				return ec.fieldContext_User_name(ctx, field)
-			case "ecosystems":
-				return ec.fieldContext_User_ecosystems(ctx, field)
-			case "ecosystem":
-				return ec.fieldContext_User_ecosystem(ctx, field)
+			case "user":
+				return ec.fieldContext_LoginResult_user(ctx, field)
+			case "token":
+				return ec.fieldContext_LoginResult_token(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LoginResult", field.Name)
 		},
 	}
 	defer func() {
@@ -4056,6 +4163,35 @@ func (ec *executionContext) _EcosystemAnalysisMessage(ctx context.Context, sel a
 	return out
 }
 
+var loginResultImplementors = []string{"LoginResult"}
+
+func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionSet, obj *model.LoginResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loginResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoginResult")
+		case "user":
+
+			out.Values[i] = ec._LoginResult_user(ctx, field, obj)
+
+		case "token":
+
+			out.Values[i] = ec._LoginResult_token(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -5109,6 +5245,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOLoginResult2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐLoginResult(ctx context.Context, sel ast.SelectionSet, v *model.LoginResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._LoginResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
