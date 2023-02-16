@@ -2,7 +2,6 @@ package state
 
 import (
 	"arbuga/backend/graph/model"
-	"errors"
 )
 
 type AppLocalState struct {
@@ -14,15 +13,11 @@ func (state AppLocalState) GetUserByID(id string) (*model.User, error) {
 	return user, nil
 }
 
-func (state AppLocalState) GetUserByLoginAndPassword(login, password string) (*model.User, error) {
+func (state AppLocalState) GetUserByLogin(login string) (*model.User, error) {
 	var user *model.User
 	for _, v := range state.Users {
-		if v.Login != nil && v.Password != nil && *v.Login == login {
-			if *v.Password == password { // TODO Yeah, you know..
-				user = v
-			} else {
-				return nil, errors.New("invalid credentials")
-			}
+		if v.Login != nil && *v.Login == login {
+			user = v
 			break
 		}
 	}

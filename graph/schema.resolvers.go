@@ -11,27 +11,46 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"math/big"
 )
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, login string, password string) (*model.LoginResult, error) {
-	rand, _ := rand.Int(rand.Reader, big.NewInt(100))
+	randValue, _ := rand.Int(rand.Reader, big.NewInt(100))
 
-	user, _ := r.UsersState.GetUserByLoginAndPassword(login, password)
+	user, _ := r.UsersState.GetUserByLogin(login)
 
 	if user == nil {
+		// hash and salt the password
+		hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+		hashedPassString := string(hashedPass)
+
+		if err != nil {
+			return nil, err
+		}
 		user = &model.User{
-			ID:         fmt.Sprintf("T%d", rand),
-			Name:       "Michael" + fmt.Sprintf("T%d", rand),
+			ID:         fmt.Sprintf("T%d", randValue),
+			Name:       "Michael" + fmt.Sprintf("T%d", randValue),
 			Login:      &login,
-			Password:   &password, // TODO Well, you know what is wrong
+			Password:   &hashedPassString,
 			Ecosystems: []*model.Ecosystem{},
 		}
 		r.UsersState.Users[user.ID] = user
+		log.Println(r.UsersState.Users)
+	} else {
+		err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password))
+		if err != nil {
+			return nil, errors.New("error")
+		}
 	}
 
-	token := auth.GenerateToken(user)
+	token, err := auth.GenerateToken(user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.LoginResult{User: user, Token: &token}, nil
 }
 

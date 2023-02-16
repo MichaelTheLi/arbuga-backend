@@ -20,6 +20,7 @@ import (
 
 const defaultPort = "8080"
 const defaultFrontendUrl = "http://localhost:5173"
+const defaultWebsocketOrigin = "localhost"
 
 func main() {
 	port := os.Getenv("PORT")
@@ -30,16 +31,22 @@ func main() {
 	if frontendUrl == "" {
 		frontendUrl = defaultFrontendUrl
 	}
+	websocketOrigin := os.Getenv("WEBSOCKET_ORIGIN")
+	if websocketOrigin == "" {
+		websocketOrigin = defaultWebsocketOrigin
+	}
 
 	localState := state.AppLocalState{
 		Users: make(map[string]*model.User),
 	}
 	router := chi.NewRouter()
 
+	allowedHeaders := []string{"Authorization", "Content-Type"}
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{frontendUrl},
 		AllowCredentials: true,
-		Debug:            true,
+		AllowedHeaders:   allowedHeaders,
+		//Debug:            true,
 	}).Handler)
 
 	router.Use(auth.Middleware(&localState))
@@ -49,7 +56,7 @@ func main() {
 	srv.AddTransport(&transport.Websocket{
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return r.Host == "localhost"
+				return r.Host == websocketOrigin
 			},
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
