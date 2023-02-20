@@ -1,0 +1,33 @@
+type Mutation {
+  login(login: String!, password: String!): LoginResult
+  saveEcosystem(id: ID, ecosystem: EcosystemInput!): EcosystemUpdateResult!
+}
+
+type LoginResult {
+  user: User
+  token: String
+}
+
+input EcosystemInput {
+  name: String
+  aquarium: AquariumGlassInput
+}
+
+input AquariumGlassInput {
+  dimensions: DimensionsInput
+  glassThickness: Int
+  substrateThickness: Int
+  decorationsVolume: Int
+}
+
+input DimensionsInput {
+  width: Int
+  height: Int
+  length: Int
+}
+
+type EcosystemUpdateResult {
+  ecosystem: Ecosystem
+  success: Boolean!
+  error: String
+}

@@ -92,17 +92,14 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		Login         func(childComplexity int, login string, password string) int
-		SaveEcosystem func(childComplexity int, id string, ecosystem model.EcosystemInput) int
+		SaveEcosystem func(childComplexity int, id *string, ecosystem model.EcosystemInput) int
 	}
 
 	Query struct {
-		Me               func(childComplexity int) int
-		PublicEcosystem  func(childComplexity int, id string) int
-		PublicEcosystems func(childComplexity int) int
+		Me func(childComplexity int) int
 	}
 
 	User struct {
-		Ecosystem  func(childComplexity int, id string) int
 		Ecosystems func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Login      func(childComplexity int) int
@@ -112,12 +109,10 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (*model.LoginResult, error)
-	SaveEcosystem(ctx context.Context, id string, ecosystem model.EcosystemInput) (*model.EcosystemUpdateResult, error)
+	SaveEcosystem(ctx context.Context, id *string, ecosystem model.EcosystemInput) (*model.EcosystemUpdateResult, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
-	PublicEcosystems(ctx context.Context) ([]*model.Ecosystem, error)
-	PublicEcosystem(ctx context.Context, id string) (*model.Ecosystem, error)
 }
 
 type executableSchema struct {
@@ -332,7 +327,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SaveEcosystem(childComplexity, args["id"].(string), args["ecosystem"].(model.EcosystemInput)), true
+		return e.complexity.Mutation.SaveEcosystem(childComplexity, args["id"].(*string), args["ecosystem"].(model.EcosystemInput)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -340,37 +335,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
-
-	case "Query.publicEcosystem":
-		if e.complexity.Query.PublicEcosystem == nil {
-			break
-		}
-
-		args, err := ec.field_Query_publicEcosystem_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.PublicEcosystem(childComplexity, args["id"].(string)), true
-
-	case "Query.publicEcosystems":
-		if e.complexity.Query.PublicEcosystems == nil {
-			break
-		}
-
-		return e.complexity.Query.PublicEcosystems(childComplexity), true
-
-	case "User.ecosystem":
-		if e.complexity.User.Ecosystem == nil {
-			break
-		}
-
-		args, err := ec.field_User_ecosystem_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.User.Ecosystem(childComplexity, args["id"].(string)), true
 
 	case "User.ecosystems":
 		if e.complexity.User.Ecosystems == nil {
@@ -470,7 +434,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema.graphqls"
+//go:embed "schema/mutation.graphqls" "schema/query.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -482,7 +446,8 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
-	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
+	{Name: "schema/mutation.graphqls", Input: sourceData("schema/mutation.graphqls"), BuiltIn: false},
+	{Name: "schema/query.graphqls", Input: sourceData("schema/query.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -517,10 +482,10 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Mutation_saveEcosystem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -550,36 +515,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_publicEcosystem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_User_ecosystem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
 	return args, nil
 }
 
@@ -1712,8 +1647,6 @@ func (ec *executionContext) fieldContext_LoginResult_user(ctx context.Context, f
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
-			case "ecosystem":
-				return ec.fieldContext_User_ecosystem(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1833,7 +1766,7 @@ func (ec *executionContext) _Mutation_saveEcosystem(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SaveEcosystem(rctx, fc.Args["id"].(string), fc.Args["ecosystem"].(model.EcosystemInput))
+		return ec.resolvers.Mutation().SaveEcosystem(rctx, fc.Args["id"].(*string), fc.Args["ecosystem"].(model.EcosystemInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1924,122 +1857,9 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
-			case "ecosystem":
-				return ec.fieldContext_User_ecosystem(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_publicEcosystems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_publicEcosystems(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PublicEcosystems(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Ecosystem)
-	fc.Result = res
-	return ec.marshalOEcosystem2ᚕᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystemᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_publicEcosystems(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Ecosystem_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Ecosystem_name(ctx, field)
-			case "aquarium":
-				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
-			case "analysis":
-				return ec.fieldContext_Ecosystem_analysis(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_publicEcosystem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_publicEcosystem(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PublicEcosystem(rctx, fc.Args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Ecosystem)
-	fc.Result = res
-	return ec.marshalOEcosystem2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystem(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_publicEcosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Ecosystem_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Ecosystem_name(ctx, field)
-			case "aquarium":
-				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
-			case "analysis":
-				return ec.fieldContext_Ecosystem_analysis(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_publicEcosystem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -2347,68 +2167,6 @@ func (ec *executionContext) fieldContext_User_ecosystems(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_ecosystem(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_ecosystem(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Ecosystem, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Ecosystem)
-	fc.Result = res
-	return ec.marshalOEcosystem2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystem(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_ecosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Ecosystem_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Ecosystem_name(ctx, field)
-			case "aquarium":
-				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
-			case "analysis":
-				return ec.fieldContext_Ecosystem_analysis(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_User_ecosystem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -4703,46 +4461,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "publicEcosystems":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_publicEcosystems(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "publicEcosystem":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_publicEcosystem(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -4794,10 +4512,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "ecosystems":
 
 			out.Values[i] = ec._User_ecosystems(ctx, field, obj)
-
-		case "ecosystem":
-
-			out.Values[i] = ec._User_ecosystem(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -5705,6 +5419,22 @@ func (ec *executionContext) marshalOEcosystemAnalysisCategory2ᚕᚖarbugaᚋbac
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
