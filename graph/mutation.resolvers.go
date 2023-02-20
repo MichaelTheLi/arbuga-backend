@@ -117,10 +117,10 @@ func (r *mutationResolver) SaveEcosystem(ctx context.Context, id *string, ecosys
 					ecosystemFound.Aquarium.Dimensions.Width = *dimensions.Width
 				}
 				if dimensions.Height != nil {
-					ecosystemFound.Aquarium.Dimensions.Width = *dimensions.Height
+					ecosystemFound.Aquarium.Dimensions.Height = *dimensions.Height
 				}
 				if dimensions.Length != nil {
-					ecosystemFound.Aquarium.Dimensions.Width = *dimensions.Length
+					ecosystemFound.Aquarium.Dimensions.Length = *dimensions.Length
 				}
 			}
 		}
