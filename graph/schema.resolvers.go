@@ -11,9 +11,10 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"math/big"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Login is the resolver for the login field.
@@ -52,6 +53,19 @@ func (r *mutationResolver) Login(ctx context.Context, login string, password str
 	}
 
 	return &model.LoginResult{User: user, Token: &token}, nil
+}
+
+// SaveEcosystem is the resolver for the saveEcosystem field.
+func (r *mutationResolver) SaveEcosystem(ctx context.Context, id string, ecosystem model.EcosystemInput) (*model.EcosystemUpdateResult, error) {
+	var result = model.EcosystemUpdateResult{
+		Success:   true,
+		Error:     nil,
+		Ecosystem: nil,
+	}
+
+	// TODO Implement real save
+	return &result, nil
+	//panic(fmt.Errorf("not implemented: SaveEcosystem - saveEcosystem"))
 }
 
 // Me is the resolver for the me field.

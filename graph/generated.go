@@ -79,13 +79,20 @@ type ComplexityRoot struct {
 		Status      func(childComplexity int) int
 	}
 
+	EcosystemUpdateResult struct {
+		Ecosystem func(childComplexity int) int
+		Error     func(childComplexity int) int
+		Success   func(childComplexity int) int
+	}
+
 	LoginResult struct {
 		Token func(childComplexity int) int
 		User  func(childComplexity int) int
 	}
 
 	Mutation struct {
-		Login func(childComplexity int, login string, password string) int
+		Login         func(childComplexity int, login string, password string) int
+		SaveEcosystem func(childComplexity int, id string, ecosystem model.EcosystemInput) int
 	}
 
 	Query struct {
@@ -105,6 +112,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (*model.LoginResult, error)
+	SaveEcosystem(ctx context.Context, id string, ecosystem model.EcosystemInput) (*model.EcosystemUpdateResult, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
@@ -267,6 +275,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.EcosystemAnalysisMessage.Status(childComplexity), true
 
+	case "EcosystemUpdateResult.ecosystem":
+		if e.complexity.EcosystemUpdateResult.Ecosystem == nil {
+			break
+		}
+
+		return e.complexity.EcosystemUpdateResult.Ecosystem(childComplexity), true
+
+	case "EcosystemUpdateResult.error":
+		if e.complexity.EcosystemUpdateResult.Error == nil {
+			break
+		}
+
+		return e.complexity.EcosystemUpdateResult.Error(childComplexity), true
+
+	case "EcosystemUpdateResult.success":
+		if e.complexity.EcosystemUpdateResult.Success == nil {
+			break
+		}
+
+		return e.complexity.EcosystemUpdateResult.Success(childComplexity), true
+
 	case "LoginResult.token":
 		if e.complexity.LoginResult.Token == nil {
 			break
@@ -292,6 +321,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["login"].(string), args["password"].(string)), true
+
+	case "Mutation.saveEcosystem":
+		if e.complexity.Mutation.SaveEcosystem == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_saveEcosystem_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SaveEcosystem(childComplexity, args["id"].(string), args["ecosystem"].(model.EcosystemInput)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -366,7 +407,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAquariumGlassInput,
+		ec.unmarshalInputDimensionsInput,
+		ec.unmarshalInputEcosystemInput,
+	)
 	first := true
 
 	switch rc.Operation.Operation {
@@ -466,6 +511,30 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_saveEcosystem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.EcosystemInput
+	if tmp, ok := rawArgs["ecosystem"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ecosystem"))
+		arg1, err = ec.unmarshalNEcosystemInput2arbugaᚋbackendᚋgraphᚋmodelᚐEcosystemInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["ecosystem"] = arg1
 	return args, nil
 }
 
@@ -1463,6 +1532,142 @@ func (ec *executionContext) fieldContext_EcosystemAnalysisMessage_status(ctx con
 	return fc, nil
 }
 
+func (ec *executionContext) _EcosystemUpdateResult_ecosystem(ctx context.Context, field graphql.CollectedField, obj *model.EcosystemUpdateResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EcosystemUpdateResult_ecosystem(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ecosystem, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Ecosystem)
+	fc.Result = res
+	return ec.marshalOEcosystem2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystem(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EcosystemUpdateResult_ecosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EcosystemUpdateResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Ecosystem_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Ecosystem_name(ctx, field)
+			case "aquarium":
+				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
+			case "analysis":
+				return ec.fieldContext_Ecosystem_analysis(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EcosystemUpdateResult_success(ctx context.Context, field graphql.CollectedField, obj *model.EcosystemUpdateResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EcosystemUpdateResult_success(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Success, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EcosystemUpdateResult_success(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EcosystemUpdateResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EcosystemUpdateResult_error(ctx context.Context, field graphql.CollectedField, obj *model.EcosystemUpdateResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EcosystemUpdateResult_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EcosystemUpdateResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EcosystemUpdateResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoginResult_user(ctx context.Context, field graphql.CollectedField, obj *model.LoginResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoginResult_user(ctx, field)
 	if err != nil {
@@ -1608,6 +1813,68 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_saveEcosystem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_saveEcosystem(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SaveEcosystem(rctx, fc.Args["id"].(string), fc.Args["ecosystem"].(model.EcosystemInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.EcosystemUpdateResult)
+	fc.Result = res
+	return ec.marshalNEcosystemUpdateResult2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystemUpdateResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_saveEcosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ecosystem":
+				return ec.fieldContext_EcosystemUpdateResult_ecosystem(ctx, field)
+			case "success":
+				return ec.fieldContext_EcosystemUpdateResult_success(ctx, field)
+			case "error":
+				return ec.fieldContext_EcosystemUpdateResult_error(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EcosystemUpdateResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_saveEcosystem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3919,6 +4186,138 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAquariumGlassInput(ctx context.Context, obj interface{}) (model.AquariumGlassInput, error) {
+	var it model.AquariumGlassInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"dimensions", "glassThickness", "substrateThickness", "decorationsVolume"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "dimensions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dimensions"))
+			it.Dimensions, err = ec.unmarshalODimensionsInput2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐDimensionsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "glassThickness":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("glassThickness"))
+			it.GlassThickness, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "substrateThickness":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("substrateThickness"))
+			it.SubstrateThickness, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "decorationsVolume":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("decorationsVolume"))
+			it.DecorationsVolume, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDimensionsInput(ctx context.Context, obj interface{}) (model.DimensionsInput, error) {
+	var it model.DimensionsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"width", "height", "length"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "width":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("width"))
+			it.Width, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "height":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
+			it.Height, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "length":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("length"))
+			it.Length, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEcosystemInput(ctx context.Context, obj interface{}) (model.EcosystemInput, error) {
+	var it model.EcosystemInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "aquarium"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "aquarium":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aquarium"))
+			it.Aquarium, err = ec.unmarshalOAquariumGlassInput2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐAquariumGlassInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -4163,6 +4562,42 @@ func (ec *executionContext) _EcosystemAnalysisMessage(ctx context.Context, sel a
 	return out
 }
 
+var ecosystemUpdateResultImplementors = []string{"EcosystemUpdateResult"}
+
+func (ec *executionContext) _EcosystemUpdateResult(ctx context.Context, sel ast.SelectionSet, obj *model.EcosystemUpdateResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ecosystemUpdateResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EcosystemUpdateResult")
+		case "ecosystem":
+
+			out.Values[i] = ec._EcosystemUpdateResult_ecosystem(ctx, field, obj)
+
+		case "success":
+
+			out.Values[i] = ec._EcosystemUpdateResult_success(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "error":
+
+			out.Values[i] = ec._EcosystemUpdateResult_error(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var loginResultImplementors = []string{"LoginResult"}
 
 func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionSet, obj *model.LoginResult) graphql.Marshaler {
@@ -4214,6 +4649,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_login(ctx, field)
+			})
+
+		case "saveEcosystem":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_saveEcosystem(ctx, field)
 			})
 
 		default:
@@ -4806,6 +5247,25 @@ func (ec *executionContext) marshalNEcosystemAnalysisMessage2ᚖarbugaᚋbackend
 	return ec._EcosystemAnalysisMessage(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNEcosystemInput2arbugaᚋbackendᚋgraphᚋmodelᚐEcosystemInput(ctx context.Context, v interface{}) (model.EcosystemInput, error) {
+	res, err := ec.unmarshalInputEcosystemInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNEcosystemUpdateResult2arbugaᚋbackendᚋgraphᚋmodelᚐEcosystemUpdateResult(ctx context.Context, sel ast.SelectionSet, v model.EcosystemUpdateResult) graphql.Marshaler {
+	return ec._EcosystemUpdateResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEcosystemUpdateResult2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystemUpdateResult(ctx context.Context, sel ast.SelectionSet, v *model.EcosystemUpdateResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EcosystemUpdateResult(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5104,6 +5564,14 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOAquariumGlassInput2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐAquariumGlassInput(ctx context.Context, v interface{}) (*model.AquariumGlassInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputAquariumGlassInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5128,6 +5596,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalODimensionsInput2ᚖarbugaᚋbackendᚋgraphᚋmodelᚐDimensionsInput(ctx context.Context, v interface{}) (*model.DimensionsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDimensionsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOEcosystem2ᚕᚖarbugaᚋbackendᚋgraphᚋmodelᚐEcosystemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Ecosystem) graphql.Marshaler {

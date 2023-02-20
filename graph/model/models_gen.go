@@ -15,10 +15,23 @@ type AquariumGlass struct {
 	DecorationsVolume  *int        `json:"decorationsVolume"`
 }
 
+type AquariumGlassInput struct {
+	Dimensions         *DimensionsInput `json:"dimensions"`
+	GlassThickness     *int             `json:"glassThickness"`
+	SubstrateThickness *int             `json:"substrateThickness"`
+	DecorationsVolume  *int             `json:"decorationsVolume"`
+}
+
 type Dimensions struct {
 	Width  int `json:"width"`
 	Height int `json:"height"`
 	Length int `json:"length"`
+}
+
+type DimensionsInput struct {
+	Width  *int `json:"width"`
+	Height *int `json:"height"`
+	Length *int `json:"length"`
 }
 
 type Ecosystem struct {
@@ -41,6 +54,17 @@ type EcosystemAnalysisMessage struct {
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
 	Status      AnalysisStatus `json:"status"`
+}
+
+type EcosystemInput struct {
+	Name     *string             `json:"name"`
+	Aquarium *AquariumGlassInput `json:"aquarium"`
+}
+
+type EcosystemUpdateResult struct {
+	Ecosystem *Ecosystem `json:"ecosystem"`
+	Success   bool       `json:"success"`
+	Error     *string    `json:"error"`
 }
 
 type LoginResult struct {
