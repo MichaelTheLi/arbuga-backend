@@ -7,6 +7,7 @@ import (
 	"arbuga/backend/state"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,6 +18,22 @@ func BuildDefaultState() state.AppLocalState {
 	return state.AppLocalState{
 		Users: make(map[string]*model.User),
 	}
+}
+
+func BuildStateWithUser(loginString string, passwordString string) state.AppLocalState {
+	stateRes := BuildDefaultState()
+
+	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(passwordString), bcrypt.MinCost) // TODO Reuse logic
+	password := string(hashedPass)
+	user := model.User{
+		ID:       "testId",
+		Login:    &loginString,
+		Password: &password,
+		Name:     "Test name",
+	}
+	stateRes.Users["testId"] = &user
+
+	return stateRes
 }
 
 func ExecuteGraphqlRequest(t *testing.T, localState *state.AppLocalState, query string, operationName string, data any, token *string) {

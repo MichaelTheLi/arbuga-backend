@@ -6,7 +6,6 @@ import (
 	"arbuga/backend/tests/utils"
 	json "encoding/json"
 	"github.com/99designs/gqlgen/graphql"
-	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
 
@@ -17,21 +16,9 @@ type MeResponse struct {
 func TestAuthenticatedWillReceiveData(t *testing.T) {
 	query := "query Me {me {id login name}}"
 	var data graphql.Response
-	state := utils.BuildDefaultState()
-	login := "testLogin"
-	passwordString := "testPass"
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(passwordString), bcrypt.MinCost) // TODO Reuse logic
-	password := string(hashedPass)
-	user := model.User{
-		ID:       "testId",
-		Login:    &login,
-		Password: &password,
-		Name:     "Test name",
-	}
-	state.Users["testId"] = &user
-
-	token, _ := auth.GenerateToken(&user)
+	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse

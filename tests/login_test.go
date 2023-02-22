@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
-	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
 
@@ -43,17 +42,8 @@ func TestLoginLoginsExistingUser(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildDefaultState()
-	login := "testLogin"
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	hashedPass, _ := bcrypt.GenerateFromPassword([]byte("testPass"), bcrypt.MinCost) // TODO Reuse logic
-	password := string(hashedPass)
-	state.Users["testId"] = &model.User{
-		ID:       "testId",
-		Login:    &login,
-		Password: &password,
-		Name:     "Test name",
-	}
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
 	if len(state.Users) != 1 {
@@ -73,17 +63,8 @@ func TestLoginWontLoginWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildDefaultState()
-	login := "testLogin"
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	hashedPass, _ := bcrypt.GenerateFromPassword([]byte("testPass"), bcrypt.MinCost) // TODO Reuse logic
-	password := string(hashedPass)
-	state.Users["testId"] = &model.User{
-		ID:       "testId",
-		Login:    &login,
-		Password: &password,
-		Name:     "Test name",
-	}
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
 	var loginData LoginResponse
@@ -106,17 +87,8 @@ func TestLoginWillReceiveErrorWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildDefaultState()
-	login := "testLogin"
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	hashedPass, _ := bcrypt.GenerateFromPassword([]byte("testPass"), bcrypt.MinCost) // TODO Reuse logic
-	password := string(hashedPass)
-	state.Users["testId"] = &model.User{
-		ID:       "testId",
-		Login:    &login,
-		Password: &password,
-		Name:     "Test name",
-	}
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
 	err := data.Errors[0]

@@ -2,6 +2,13 @@ type Query {
   me: User
 }
 
+type User {
+  id: ID!
+  login: String
+  name: String!
+  ecosystems: [Ecosystem!]
+}
+
 type Ecosystem {
   id: ID!
   name: String!
@@ -41,11 +48,4 @@ type Dimensions {
   width: Int!
   height: Int!
   length: Int!
-}
-
-type User {
-  id: ID!
-  login: String
-  name: String!
-  ecosystems: [Ecosystem!]
 }
