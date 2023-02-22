@@ -1,7 +1,7 @@
 package state
 
 import (
-	"arbuga/backend/graph/model"
+	"arbuga/backend/api/graph/model"
 )
 
 type AppLocalState struct {

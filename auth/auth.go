@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"arbuga/backend/graph/model"
+	"arbuga/backend/api/graph/model"
 	"arbuga/backend/state"
 	"context"
 	"github.com/golang-jwt/jwt/v4"
