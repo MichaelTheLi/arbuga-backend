@@ -2,7 +2,6 @@ package main_test
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/auth"
 	"arbuga/backend/tests/utils"
 	json "encoding/json"
 	"github.com/99designs/gqlgen/graphql"
@@ -13,7 +12,7 @@ import (
 func TestEcosystemsValidCount(t *testing.T) {
 	query := "query Me {me {id ecosystems { id }}}"
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, token := utils.BuildStateWithUser("testLogin", "testPass")
 	state.Users["testId"].Ecosystems = []*model.Ecosystem{
 		{
 			ID: "ecosystem1",
@@ -23,7 +22,6 @@ func TestEcosystemsValidCount(t *testing.T) {
 		},
 	}
 
-	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse
@@ -36,7 +34,7 @@ func TestEcosystemsValidCount(t *testing.T) {
 func TestEcosystemsBasicDataReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id name }}}"
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, token := utils.BuildStateWithUser("testLogin", "testPass")
 	state.Users["testId"].Ecosystems = []*model.Ecosystem{
 		{
 			ID:   "ecosystem1",
@@ -44,7 +42,6 @@ func TestEcosystemsBasicDataReceived(t *testing.T) {
 		},
 	}
 
-	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse
@@ -57,7 +54,7 @@ func TestEcosystemsBasicDataReceived(t *testing.T) {
 func TestEcosystemsAquariumDimensionsReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id aquarium {glassThickness substrateThickness decorationsVolume dimensions{width height length}} }}}"
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, token := utils.BuildStateWithUser("testLogin", "testPass")
 	thickness := 15
 	volume := 18
 	state.Users["testId"].Ecosystems = []*model.Ecosystem{
@@ -76,7 +73,6 @@ func TestEcosystemsAquariumDimensionsReceived(t *testing.T) {
 		},
 	}
 
-	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse
@@ -89,7 +85,7 @@ func TestEcosystemsAquariumDimensionsReceived(t *testing.T) {
 func TestEcosystemsAnalysisReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id analysis { id name description status messages { id name description status } } }}}"
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, token := utils.BuildStateWithUser("testLogin", "testPass")
 	state.Users["testId"].Ecosystems = []*model.Ecosystem{
 		{
 			ID: "ecosystem1",
@@ -125,7 +121,6 @@ func TestEcosystemsAnalysisReceived(t *testing.T) {
 		},
 	}
 
-	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse

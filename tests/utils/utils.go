@@ -21,7 +21,7 @@ func BuildDefaultState() state.AppLocalState {
 	}
 }
 
-func BuildStateWithUser(loginString string, passwordString string) state.AppLocalState {
+func BuildStateWithUser(loginString string, passwordString string) (state.AppLocalState, string) {
 	stateRes := BuildDefaultState()
 
 	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(passwordString), bcrypt.MinCost) // TODO Reuse logic
@@ -34,18 +34,32 @@ func BuildStateWithUser(loginString string, passwordString string) state.AppLoca
 	}
 	stateRes.Users["testId"] = &user
 
-	return stateRes
+	token, _ := auth.GenerateToken(stateRes.Users["testId"])
+	return stateRes, token
 }
 
 func ExecuteGraphqlRequest(t *testing.T, localState *state.AppLocalState, query string, operationName string, data any, token *string) {
+	executeGraphqlRequest(t, localState, query, "", operationName, data, token)
+}
+
+func ExecuteGraphqlRequestWithVariables(t *testing.T, localState *state.AppLocalState, query string, variables string, operationName string, data any, token *string) {
+	executeGraphqlRequest(t, localState, query, variables, operationName, data, token)
+}
+
+func executeGraphqlRequest(t *testing.T, localState *state.AppLocalState, query string, variables string, operationName string, data any, token *string) {
 	if localState == nil {
 		defaultState := BuildDefaultState()
 		localState = &defaultState
 	}
 	config := graph.BuildConfigFromEnv()
 
+	var request string
 	queryEncoded, _ := json.Marshal(query)
-	request := fmt.Sprintf("{\"query\":%s,\"operationName\":\"%s\"}", queryEncoded, operationName)
+	if variables != "" {
+		request = fmt.Sprintf("{\"query\":%s,\"operationName\":\"%s\", \"variables\":%s}", queryEncoded, operationName, variables)
+	} else {
+		request = fmt.Sprintf("{\"query\":%s,\"operationName\":\"%s\"}", queryEncoded, operationName)
+	}
 	body := strings.NewReader(request)
 
 	req, err := http.NewRequest("POST", "/query", body)
@@ -64,7 +78,7 @@ func ExecuteGraphqlRequest(t *testing.T, localState *state.AppLocalState, query 
 	handler := middleware(graph.BuildGraphqlServer(localState, config))
 	handler.ServeHTTP(rr, req)
 
-	assert.Equal(t, http.StatusOK, rr.Code, "Status != 200")
+	assert.Equalf(t, http.StatusOK, rr.Code, "Status != 200. Body: %s", rr.Body.String())
 	jsonErr := json.NewDecoder(rr.Body).Decode(&data)
 	assert.Nil(t, jsonErr, "Json not decoded")
 }

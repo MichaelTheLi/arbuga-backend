@@ -39,7 +39,7 @@ func TestLoginLoginsExistingUser(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
@@ -54,7 +54,7 @@ func TestLoginWontLoginWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
@@ -72,7 +72,7 @@ func TestLoginWillReceiveErrorWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 

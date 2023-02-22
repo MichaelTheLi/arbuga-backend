@@ -2,7 +2,6 @@ package main_test
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/auth"
 	"arbuga/backend/tests/utils"
 	json "encoding/json"
 	"github.com/99designs/gqlgen/graphql"
@@ -17,9 +16,8 @@ type MeResponse struct {
 func TestAuthenticatedWillReceiveData(t *testing.T) {
 	query := "query Me {me {id login name}}"
 	var data graphql.Response
-	state := utils.BuildStateWithUser("testLogin", "testPass")
+	state, token := utils.BuildStateWithUser("testLogin", "testPass")
 
-	token, _ := auth.GenerateToken(state.Users["testId"])
 	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
 
 	var meData MeResponse
