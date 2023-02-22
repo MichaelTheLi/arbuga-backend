@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -24,14 +25,10 @@ func TestLoginCreatesUser(t *testing.T) {
 	state := utils.BuildDefaultState()
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
-	login, _ := state.GetUserByLogin("testLogin")
-	if login == nil {
-		t.Error("Expected the user to be created, actually - not created")
-	}
-
-	if len(state.Users) != 1 {
-		t.Errorf("Expected only 1 user to be created, got %d", len(state.Users))
-	}
+	user, err := state.GetUserByLogin("testLogin")
+	assert.Nil(t, err)
+	assert.NotNil(t, user)
+	assert.Len(t, state.Users, 1)
 }
 
 func TestLoginLoginsExistingUser(t *testing.T) {
@@ -46,13 +43,7 @@ func TestLoginLoginsExistingUser(t *testing.T) {
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
-	if len(state.Users) != 1 {
-		if len(state.Users) > 1 {
-			t.Error("Expected that existing user will be used, got new created")
-		} else {
-			t.Error("Expected that existing user will be used, got removed somehow")
-		}
-	}
+	assert.Len(t, state.Users, 1, "Should be still single user")
 }
 
 func TestLoginWontLoginWithWrongPassword(t *testing.T) {
@@ -69,14 +60,8 @@ func TestLoginWontLoginWithWrongPassword(t *testing.T) {
 
 	var loginData LoginResponse
 	err := json.Unmarshal(data.Data, &loginData)
-
-	if err != nil {
-		t.Errorf("Got err: %e", err)
-	}
-
-	if loginData.Login != nil {
-		t.Error("Expected to not receive user, got one")
-	}
+	assert.Nil(t, err)
+	assert.Nil(t, loginData.Login)
 }
 
 func TestLoginWillReceiveErrorWithWrongPassword(t *testing.T) {
@@ -92,13 +77,9 @@ func TestLoginWillReceiveErrorWithWrongPassword(t *testing.T) {
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
 	err := data.Errors[0]
-	if err.Path.String() != "login" {
-		t.Errorf("Expected: %s. Got: %s.", "login", err.Path.String())
-	}
 
-	if err.Message != "error" {
-		t.Errorf("Expected: %s. Got: %s.", "error", err.Message)
-	}
+	assert.Equal(t, "login", err.Path.String())
+	assert.Equal(t, "error", err.Message)
 }
 
 func TestLoginReturnsTokenWithValidData(t *testing.T) {
@@ -113,13 +94,8 @@ func TestLoginReturnsTokenWithValidData(t *testing.T) {
 
 	var loginData LoginResponse
 	err := json.Unmarshal(data.Data, &loginData)
-
-	if err != nil {
-		t.Errorf("Received error %e", err)
-	}
-	if loginData.Login.Token == nil || *loginData.Login.Token == "" {
-		t.Error("Expected to receive, got none")
-	}
+	assert.Nil(t, err)
+	assert.NotEmpty(t, loginData.Login.Token)
 }
 
 func TestLoginReturnsUserWithValidData(t *testing.T) {
@@ -134,16 +110,8 @@ func TestLoginReturnsUserWithValidData(t *testing.T) {
 
 	var loginData LoginResponse
 	err := json.Unmarshal(data.Data, &loginData)
+	assert.Nil(t, err)
 
-	if err != nil {
-		t.Errorf("Got err: %e", err)
-	}
-
-	if loginData.Login.User == nil {
-		t.Error("Expected to receive user, got none")
-	}
-
-	if *loginData.Login.User.Login != "testLogin" {
-		t.Errorf("Expected to receive the same Login, got %s", *loginData.Login.User.Login)
-	}
+	assert.NotNil(t, loginData.Login.User)
+	assert.Equal(t, "testLogin", *loginData.Login.User.Login)
 }

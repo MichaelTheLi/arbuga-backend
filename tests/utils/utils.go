@@ -7,6 +7,7 @@ import (
 	"arbuga/backend/state"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/http/httptest"
@@ -56,20 +57,14 @@ func ExecuteGraphqlRequest(t *testing.T, localState *state.AppLocalState, query 
 		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *token)}
 	}
 
-	if err != nil {
-		t.Errorf("Error creating a new request: %v", err)
-	}
+	assert.Nil(t, err, "Request created with an error")
 
 	rr := httptest.NewRecorder()
 	middleware := auth.Middleware(localState)
 	handler := middleware(graph.BuildGraphqlServer(localState, config))
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("Handler returned wrong status code. Expected: %d. Got: %d.", http.StatusOK, status)
-	}
-
-	if err := json.NewDecoder(rr.Body).Decode(&data); err != nil {
-		t.Errorf("Error decoding response body: %v", err)
-	}
+	assert.Equal(t, http.StatusOK, rr.Code, "Status != 200")
+	jsonErr := json.NewDecoder(rr.Body).Decode(&data)
+	assert.Nil(t, jsonErr, "Json not decoded")
 }
