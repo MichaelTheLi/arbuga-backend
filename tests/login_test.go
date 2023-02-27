@@ -25,10 +25,10 @@ func TestLoginCreatesUser(t *testing.T) {
 	state := utils.BuildDefaultState()
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
-	user, err := state.GetUserByLogin("testLogin")
+	user, err := state.State.UserGateway.GetUserByLogin("testLogin")
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
-	assert.Len(t, state.Users, 1)
+	assert.Len(t, state.UsersGateway.Users, 1)
 }
 
 func TestLoginLoginsExistingUser(t *testing.T) {
@@ -39,11 +39,11 @@ func TestLoginLoginsExistingUser(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
-	assert.Len(t, state.Users, 1, "Should be still single user")
+	assert.Len(t, state.UsersGateway.Users, 1, "Should be still single user")
 }
 
 func TestLoginWontLoginWithWrongPassword(t *testing.T) {
@@ -54,7 +54,7 @@ func TestLoginWontLoginWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
@@ -72,14 +72,14 @@ func TestLoginWillReceiveErrorWithWrongPassword(t *testing.T) {
 	)
 
 	var data graphql.Response
-	state, _ := utils.BuildStateWithUser("testLogin", "testPass")
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "LoginUser", &data, nil)
 
 	err := data.Errors[0]
 
 	assert.Equal(t, "login", err.Path.String())
-	assert.Equal(t, "error", err.Message)
+	assert.Equal(t, "error: invalid password", err.Message)
 }
 
 func TestLoginReturnsTokenWithValidData(t *testing.T) {
@@ -95,7 +95,11 @@ func TestLoginReturnsTokenWithValidData(t *testing.T) {
 	var loginData LoginResponse
 	err := json.Unmarshal(data.Data, &loginData)
 	assert.Nil(t, err)
-	assert.NotEmpty(t, loginData.Login.Token)
+	if loginData.Login != nil {
+		assert.NotEmpty(t, loginData.Login.Token)
+	} else {
+		assert.Fail(t, "Wrong response")
+	}
 }
 
 func TestLoginReturnsUserWithValidData(t *testing.T) {
@@ -112,6 +116,10 @@ func TestLoginReturnsUserWithValidData(t *testing.T) {
 	err := json.Unmarshal(data.Data, &loginData)
 	assert.Nil(t, err)
 
-	assert.NotNil(t, loginData.Login.User)
-	assert.Equal(t, "testLogin", *loginData.Login.User.Login)
+	if loginData.Login != nil {
+		assert.NotNil(t, loginData.Login.User)
+		assert.Equal(t, "testLogin", *loginData.Login.User.Login)
+	} else {
+		assert.Fail(t, "Wrong response")
+	}
 }

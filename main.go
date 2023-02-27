@@ -1,20 +1,53 @@
 package main
 
 import (
+	"arbuga/backend/adapters"
 	"arbuga/backend/api"
-	"arbuga/backend/api/graph/model"
-	"arbuga/backend/state"
+	"arbuga/backend/api/graph"
+	"arbuga/backend/app"
+	"arbuga/backend/domain"
 	"log"
 	"net/http"
 )
 
 func main() {
-	localState := state.AppLocalState{
-		Users: make(map[string]*model.User),
-	}
-	config := graph.BuildConfigFromEnv()
+	config := api.BuildConfigFromEnv()
 
-	router := graph.BuildServer(&localState, config)
+	router := api.BuildServer(buildServerState(), config)
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, router))
+}
+
+// TODO ioc container?
+func buildServerState() api.ServerState {
+	userGateway := &adapters.LocalUsersGateway{
+		Users: make(map[string]*domain.User),
+	}
+	tokenService := &adapters.JwtTokenService{
+		Secret: "get_this_from_env", // TODO Get secret from env
+	}
+	authService := &adapters.BcryptAuthService{}
+	signInService := &app.SignInService{
+		Gateway:      userGateway,
+		AuthService:  authService,
+		TokenService: tokenService,
+	}
+	signUpService := &app.SignUpService{
+		Gateway:     userGateway,
+		AuthService: authService,
+	}
+	userService := &app.UserService{
+		Gateway: userGateway,
+	}
+	resolver := graph.Resolver{
+		SignInService: signInService,
+		SignUpService: signUpService,
+		UserService:   userService,
+	}
+
+	return api.ServerState{
+		Resolver:     &resolver,
+		TokenService: tokenService,
+		UserGateway:  userGateway,
+	}
 }

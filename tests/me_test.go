@@ -16,9 +16,9 @@ type MeResponse struct {
 func TestAuthenticatedWillReceiveData(t *testing.T) {
 	query := "query Me {me {id login name}}"
 	var data graphql.Response
-	state, token := utils.BuildStateWithUser("testLogin", "testPass")
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &token)
+	utils.ExecuteGraphqlRequest(t, &state, query, "Me", &data, &state.Token)
 
 	var meData MeResponse
 	err := json.Unmarshal(data.Data, &meData)

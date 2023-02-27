@@ -1,9 +1,8 @@
-package graph
+package api
 
 import (
 	"arbuga/backend/api/graph"
-	"arbuga/backend/auth"
-	"arbuga/backend/state"
+	"arbuga/backend/app"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
@@ -15,19 +14,25 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 )
 
-func BuildServer(localState *state.AppLocalState, config ServerConfig) *chi.Mux {
-	router := buildRouter(localState, config)
+type ServerState struct {
+	Resolver     *graph.Resolver
+	TokenService app.TokenService
+	UserGateway  app.UserGateway
+}
+
+func BuildServer(serverState ServerState, config ServerConfig) *chi.Mux {
+	router := buildRouter(serverState, config)
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", BuildGraphqlServer(localState, config))
+	router.Handle("/query", BuildGraphqlServer(serverState.Resolver, config))
 
 	return router
 }
 
-func BuildGraphqlServer(localState *state.AppLocalState, config ServerConfig) *handler.Server {
+func BuildGraphqlServer(resolver *graph.Resolver, config ServerConfig) *handler.Server {
 	srv := handler.NewDefaultServer(
 		graph.NewExecutableSchema(
-			graph.Config{Resolvers: &graph.Resolver{UsersState: localState}},
+			graph.Config{Resolvers: resolver},
 		),
 	)
 
@@ -44,7 +49,7 @@ func BuildGraphqlServer(localState *state.AppLocalState, config ServerConfig) *h
 	return srv
 }
 
-func buildRouter(localState *state.AppLocalState, config ServerConfig) *chi.Mux {
+func buildRouter(serverState ServerState, config ServerConfig) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(cors.New(cors.Options{
@@ -54,7 +59,7 @@ func buildRouter(localState *state.AppLocalState, config ServerConfig) *chi.Mux 
 		//Debug:            true,
 	}).Handler)
 
-	router.Use(auth.Middleware(localState))
+	router.Use(graph.Middleware(&serverState.TokenService, &serverState.UserGateway))
 
 	return router
 }

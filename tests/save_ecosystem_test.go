@@ -1,16 +1,11 @@
 package main_test
 
 import (
-	"arbuga/backend/api/graph/model"
 	"arbuga/backend/tests/utils"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-type SaveEcosystem struct {
-	SaveEcosystem *model.LoginResult `json:"saveEcosystem"`
-}
 
 func TestSaveEcosystemCreatedEntity(t *testing.T) {
 	query := "mutation SaveEcosystem($ecosystem: EcosystemInput!) { saveEcosystem(ecosystem: $ecosystem) { success error ecosystem { id name aquarium {dimensions{width height} }}}}"
@@ -18,10 +13,10 @@ func TestSaveEcosystemCreatedEntity(t *testing.T) {
 	variables := "{ \"ecosystem\": { \"name\": \"tEst eCosystem\", \"aquarium\": { \"dimensions\": { \"width\": 10 } } } }"
 
 	var data graphql.Response
-	state, token := utils.BuildStateWithUser("testLogin", "testPass")
+	state := utils.BuildStateWithUser("testLogin", "testPass")
 
-	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "SaveEcosystem", &data, &token)
-	user, err := state.GetUserByLogin("testLogin")
+	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "SaveEcosystem", &data, &state.Token)
+	user, err := state.State.UserGateway.GetUserByLogin("testLogin")
 
 	assert.Nil(t, err)
 	assert.NotNil(t, user)

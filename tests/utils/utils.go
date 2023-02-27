@@ -1,57 +1,125 @@
 package utils
 
 import (
+	"arbuga/backend/adapters"
 	"arbuga/backend/api"
-	"arbuga/backend/api/graph/model"
-	"arbuga/backend/auth"
-	"arbuga/backend/state"
+	"arbuga/backend/api/graph"
+	"arbuga/backend/app"
+	"arbuga/backend/domain"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func BuildDefaultState() state.AppLocalState {
-	return state.AppLocalState{
-		Users: make(map[string]*model.User),
+type TestServerState struct {
+	State        api.ServerState
+	Token        string
+	UsersGateway *adapters.LocalUsersGateway
+}
+
+func BuildDefaultState() TestServerState {
+	userGateway := &adapters.LocalUsersGateway{
+		Users: make(map[string]*domain.User),
+	}
+	tokenService := &adapters.JwtTokenService{
+		Secret: "tests_secret",
+	}
+	authService := &adapters.BcryptAuthService{}
+	signInService := &app.SignInService{
+		Gateway:      userGateway,
+		AuthService:  authService,
+		TokenService: tokenService,
+	}
+	signUpService := &app.SignUpService{
+		Gateway:     userGateway,
+		AuthService: authService,
+	}
+	userService := &app.UserService{
+		Gateway: userGateway,
+	}
+	resolver := graph.Resolver{
+		SignInService: signInService,
+		SignUpService: signUpService,
+		UserService:   userService,
+	}
+
+	return TestServerState{
+		State: api.ServerState{
+			Resolver:     &resolver,
+			TokenService: tokenService,
+			UserGateway:  userGateway,
+		},
+		Token:        "",
+		UsersGateway: userGateway,
 	}
 }
 
-func BuildStateWithUser(loginString string, passwordString string) (state.AppLocalState, string) {
-	stateRes := BuildDefaultState()
-
-	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(passwordString), bcrypt.MinCost) // TODO Reuse logic
-	password := string(hashedPass)
-	user := model.User{
-		ID:       "testId",
-		Login:    &loginString,
-		Password: &password,
-		Name:     "Test name",
+func BuildStateWithUser(loginString string, passwordString string) TestServerState {
+	userGateway := &adapters.LocalUsersGateway{
+		Users: make(map[string]*domain.User),
 	}
-	stateRes.Users["testId"] = &user
+	tokenService := &adapters.JwtTokenService{
+		Secret: "tests_secret",
+	}
+	authService := &adapters.BcryptAuthService{}
+	signInService := &app.SignInService{
+		Gateway:      userGateway,
+		AuthService:  authService,
+		TokenService: tokenService,
+	}
+	signUpService := &app.SignUpService{
+		Gateway:     userGateway,
+		AuthService: authService,
+	}
+	userService := &app.UserService{
+		Gateway: userGateway,
+	}
+	resolver := graph.Resolver{
+		SignInService: signInService,
+		SignUpService: signUpService,
+		UserService:   userService,
+	}
 
-	token, _ := auth.GenerateToken(stateRes.Users["testId"])
-	return stateRes, token
+	hashedPass, _ := authService.HashFromPassword(passwordString)
+	user := &domain.User{
+		ID:           "testId",
+		Login:        &loginString,
+		PasswordHash: &hashedPass,
+		Name:         "Test name",
+	}
+	userGateway.Users["testId"] = user
+
+	token, _ := tokenService.GenerateToken(user)
+
+	return TestServerState{
+		State: api.ServerState{
+			Resolver:     &resolver,
+			TokenService: tokenService,
+			UserGateway:  userGateway,
+		},
+		Token:        token,
+		UsersGateway: userGateway,
+	}
 }
 
-func ExecuteGraphqlRequest(t *testing.T, localState *state.AppLocalState, query string, operationName string, data any, token *string) {
-	executeGraphqlRequest(t, localState, query, "", operationName, data, token)
+func ExecuteGraphqlRequest(t *testing.T, serverState *TestServerState, query string, operationName string, data any, token *string) {
+	executeGraphqlRequest(t, serverState, query, "", operationName, data, token)
 }
 
-func ExecuteGraphqlRequestWithVariables(t *testing.T, localState *state.AppLocalState, query string, variables string, operationName string, data any, token *string) {
-	executeGraphqlRequest(t, localState, query, variables, operationName, data, token)
+func ExecuteGraphqlRequestWithVariables(t *testing.T, serverState *TestServerState, query string, variables string, operationName string, data any, token *string) {
+	executeGraphqlRequest(t, serverState, query, variables, operationName, data, token)
 }
 
-func executeGraphqlRequest(t *testing.T, localState *state.AppLocalState, query string, variables string, operationName string, data any, token *string) {
-	if localState == nil {
+func executeGraphqlRequest(t *testing.T, serverState *TestServerState, query string, variables string, operationName string, data any, token *string) {
+	if serverState == nil {
 		defaultState := BuildDefaultState()
-		localState = &defaultState
+		serverState = &defaultState
 	}
-	config := graph.BuildConfigFromEnv()
+	config := api.BuildConfigFromEnv()
 
 	var request string
 	queryEncoded, _ := json.Marshal(query)
@@ -74,8 +142,8 @@ func executeGraphqlRequest(t *testing.T, localState *state.AppLocalState, query 
 	assert.Nil(t, err, "Request created with an error")
 
 	rr := httptest.NewRecorder()
-	middleware := auth.Middleware(localState)
-	handler := middleware(graph.BuildGraphqlServer(localState, config))
+	middleware := graph.Middleware(&serverState.State.TokenService, &serverState.State.UserGateway)
+	handler := middleware(api.BuildGraphqlServer(serverState.State.Resolver, config))
 	handler.ServeHTTP(rr, req)
 
 	assert.Equalf(t, http.StatusOK, rr.Code, "Status != 200. Body: %s", rr.Body.String())

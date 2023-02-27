@@ -1,6 +1,8 @@
 package graph
 
-import "arbuga/backend/state"
+import (
+	"arbuga/backend/app"
+)
 
 //go:generate go run github.com/99designs/gqlgen generate
 
@@ -9,5 +11,7 @@ import "arbuga/backend/state"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UsersState *state.AppLocalState
+	SignInService *app.SignInService
+	SignUpService *app.SignUpService
+	UserService   *app.UserService
 }

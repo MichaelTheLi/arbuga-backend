@@ -5,9 +5,10 @@ import (
 	"errors"
 )
 
-type LoginService struct {
-	gateway     UserGateway
-	authService AuthService
+type SignInService struct {
+	Gateway      UserGateway
+	AuthService  AuthService
+	TokenService TokenService
 }
 
 type LoginResult struct {
@@ -15,19 +16,19 @@ type LoginResult struct {
 	User  *domain.User
 }
 
-func (service *LoginService) Login(login string, password string) (*LoginResult, error) {
-	user, _ := service.gateway.GetUserByLogin(login)
+func (service *SignInService) Login(login string, password string) (*LoginResult, error) {
+	user, _ := service.Gateway.GetUserByLogin(login)
 
 	if user == nil {
 		return nil, errors.New("unknown user")
 	}
 
-	valid, err := service.authService.IsHashValid(*user.PasswordHash, password)
+	valid, err := service.AuthService.IsHashValid(*user.PasswordHash, password)
 	if valid == false || err != nil {
 		return nil, errors.New("invalid password")
 	}
 
-	token, err := service.authService.GenerateToken(user)
+	token, err := service.TokenService.GenerateToken(user)
 	if err != nil {
 		return nil, errors.New("token cannot be generated")
 	}

@@ -1,21 +1,12 @@
-package auth
+package graph
 
 import (
-	"arbuga/backend/api/graph/model"
-	"arbuga/backend/state"
+	"arbuga/backend/app"
+	"arbuga/backend/domain"
 	"context"
-	"github.com/golang-jwt/jwt/v4"
 	"log"
 	"net/http"
 )
-
-const secret = "t0k3n" // TODO Get from env
-
-type UserClaims struct {
-	jwt.RegisteredClaims
-	UserId string
-	Name   string
-}
 
 // A private key for context that only this package can access. This is important
 // to prevent collisions between different context uses
@@ -26,7 +17,7 @@ type contextKey struct {
 }
 
 // Middleware AuthMiddleware decodes the share session cookie and packs the session into context
-func Middleware(state *state.AppLocalState) func(http.Handler) http.Handler {
+func Middleware(tokenService *app.TokenService, usersGateway *app.UserGateway) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			const prefix = "Bearer "
@@ -40,23 +31,18 @@ func Middleware(state *state.AppLocalState) func(http.Handler) http.Handler {
 			}
 
 			tokenValue := tokenHeader[len(prefix):]
-			userClaims := &UserClaims{}
-			token, err := jwt.ParseWithClaims(tokenValue, userClaims, func(token *jwt.Token) (interface{}, error) {
-				return []byte(secret), nil
-			})
+			userId, err := (*tokenService).GetUserIdFromToken(tokenValue)
 
 			// Checking token validity
-			if err != nil || !token.Valid {
+			if err != nil {
 				log.Println(err)
-				log.Println(token)
+				log.Println(tokenValue)
 				http.Error(w, "Invalid token", http.StatusForbidden)
 				return
 			}
 
-			userId := userClaims.UserId
-
 			// get the user from the database
-			user, _ := state.GetUserByID(userId)
+			user, _ := (*usersGateway).GetUserByID(userId)
 
 			// put it in context
 			ctx := context.WithValue(r.Context(), userCtxKey, user)
@@ -69,22 +55,7 @@ func Middleware(state *state.AppLocalState) func(http.Handler) http.Handler {
 }
 
 // ForContext finds the user from the context. REQUIRES AuthMiddleware to have run.
-func ForContext(ctx context.Context) *model.User {
-	raw, _ := ctx.Value(userCtxKey).(*model.User)
+func ForContext(ctx context.Context) *domain.User {
+	raw, _ := ctx.Value(userCtxKey).(*domain.User)
 	return raw
-}
-
-func GenerateToken(user *model.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), UserClaims{
-		UserId:           user.ID,
-		Name:             user.Name,
-		RegisteredClaims: jwt.RegisteredClaims{},
-	})
-
-	tokenString, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
