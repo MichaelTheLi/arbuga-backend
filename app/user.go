@@ -104,6 +104,15 @@ func (service *UserService) UpdateEcosystem(user *User, id string, input *Ecosys
 		}
 
 		ecosystemFound.Analysis = ecosystemFound.CalculateAnalysis()
+
+		_, err := service.Gateway.SaveUser(user)
+
+		if err != nil {
+			result.Success = false
+			s := "Ecosystem not updated"
+			result.Error = &s
+		}
+
 		result.Ecosystem = ecosystemFound
 	}
 
