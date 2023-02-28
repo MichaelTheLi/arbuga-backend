@@ -2,13 +2,13 @@ package output
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/domain"
+	"arbuga/backend/app"
 )
 
-func ConvertUser(domainUser *domain.User) *model.User {
+func ConvertUser(domainUser *app.User) *model.User {
 	var ecosystems []*model.Ecosystem
 
-	for _, ecosystem := range domainUser.Ecosystems {
+	for _, ecosystem := range domainUser.Owner.Ecosystems {
 		newEcosystem := ConvertEcosystem(ecosystem)
 		ecosystems = append(ecosystems, newEcosystem)
 	}
@@ -16,8 +16,7 @@ func ConvertUser(domainUser *domain.User) *model.User {
 	return &model.User{
 		ID:         domainUser.ID,
 		Login:      domainUser.Login,
-		Password:   domainUser.PasswordHash,
-		Name:       domainUser.Name,
+		Name:       domainUser.Owner.Name,
 		Ecosystems: ecosystems,
 		Ecosystem:  nil,
 	}

@@ -1,9 +1,13 @@
 package domain
 
-type User struct {
-	ID           string
-	Login        *string
-	PasswordHash *string
-	Name         string
-	Ecosystems   []*Ecosystem
+type Owner struct {
+	Name       string
+	Ecosystems []*Ecosystem
+}
+
+func NewOwner(name string) *Owner {
+	return &Owner{
+		Name:       name,
+		Ecosystems: nil,
+	}
 }

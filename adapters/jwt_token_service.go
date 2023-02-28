@@ -1,7 +1,7 @@
 package adapters
 
 import (
-	"arbuga/backend/domain"
+	"arbuga/backend/app"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -16,10 +16,10 @@ type UserClaims struct {
 	Name   string
 }
 
-func (service JwtTokenService) GenerateToken(user *domain.User) (string, error) {
+func (service JwtTokenService) GenerateToken(person *app.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), UserClaims{
-		UserId:           user.ID,
-		Name:             user.Name,
+		UserId:           person.ID,
+		Name:             person.Owner.Name,
 		RegisteredClaims: jwt.RegisteredClaims{},
 	})
 

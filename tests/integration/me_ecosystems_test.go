@@ -3,7 +3,7 @@ package integration_test
 import (
 	"arbuga/backend/api/converters/output"
 	"arbuga/backend/domain"
-	"arbuga/backend/tests/utils"
+	"arbuga/backend/tests/integration/utils"
 	"encoding/json"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ func TestEcosystemsValidCount(t *testing.T) {
 	query := "query Me {me {id ecosystems { id }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
 		{
 			ID: "ecosystem1",
 		},
@@ -29,14 +29,14 @@ func TestEcosystemsValidCount(t *testing.T) {
 	err := json.Unmarshal(data.Data, &meData)
 	assert.Nil(t, err)
 
-	assert.Len(t, meData.Me.Ecosystems, len(state.UsersGateway.Users["testId"].Ecosystems))
+	assert.Len(t, meData.Me.Ecosystems, len(state.UsersGateway.Users["testId"].Owner.Ecosystems))
 }
 
 func TestEcosystemsBasicDataReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id name }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
 		{
 			ID:   "ecosystem1",
 			Name: "Test Ecosystem Name",
@@ -59,7 +59,7 @@ func TestEcosystemsAquariumDimensionsReceived(t *testing.T) {
 	state := utils.BuildStateWithUser("testLogin", "testPass")
 	thickness := 15
 	volume := 18
-	state.UsersGateway.Users["testId"].Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
 		{
 			ID: "ecosystem1",
 			Aquarium: &domain.AquariumGlass{
@@ -91,7 +91,7 @@ func TestEcosystemsAnalysisReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id analysis { id name description status messages { id name description status } } }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
 		{
 			ID: "ecosystem1",
 			Analysis: []*domain.EcosystemAnalysisCategory{

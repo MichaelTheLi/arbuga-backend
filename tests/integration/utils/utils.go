@@ -18,12 +18,12 @@ import (
 type TestServerState struct {
 	State        api.ServerState
 	Token        string
-	UsersGateway *adapters.LocalUsersGateway
+	UsersGateway *adapters.LocalUserGateway
 }
 
 func BuildDefaultState() TestServerState {
-	userGateway := &adapters.LocalUsersGateway{
-		Users: make(map[string]*domain.User),
+	userGateway := &adapters.LocalUserGateway{
+		Users: make(map[string]*app.User),
 	}
 	tokenService := &adapters.JwtTokenService{
 		Secret: "tests_secret",
@@ -59,8 +59,8 @@ func BuildDefaultState() TestServerState {
 }
 
 func BuildStateWithUser(loginString string, passwordString string) TestServerState {
-	userGateway := &adapters.LocalUsersGateway{
-		Users: make(map[string]*domain.User),
+	userGateway := &adapters.LocalUserGateway{
+		Users: make(map[string]*app.User),
 	}
 	tokenService := &adapters.JwtTokenService{
 		Secret: "tests_secret",
@@ -85,11 +85,14 @@ func BuildStateWithUser(loginString string, passwordString string) TestServerSta
 	}
 
 	hashedPass, _ := authService.HashFromPassword(passwordString)
-	user := &domain.User{
+	owner := &domain.Owner{
+		Name: "Test name",
+	}
+	user := &app.User{
 		ID:           "testId",
 		Login:        &loginString,
 		PasswordHash: &hashedPass,
-		Name:         "Test name",
+		Owner:        owner,
 	}
 	userGateway.Users["testId"] = user
 

@@ -5,7 +5,6 @@ import (
 	"arbuga/backend/api"
 	"arbuga/backend/api/graph"
 	"arbuga/backend/app"
-	"arbuga/backend/domain"
 	"log"
 	"net/http"
 )
@@ -20,8 +19,8 @@ func main() {
 
 // TODO ioc container?
 func buildServerState() api.ServerState {
-	userGateway := &adapters.LocalUsersGateway{
-		Users: make(map[string]*domain.User),
+	userGateway := &adapters.LocalUserGateway{
+		Users: make(map[string]*app.User),
 	}
 	tokenService := &adapters.JwtTokenService{
 		Secret: "get_this_from_env", // TODO Get secret from env

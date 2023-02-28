@@ -1,7 +1,6 @@
 package app
 
 import (
-	"arbuga/backend/domain"
 	"errors"
 )
 
@@ -13,7 +12,7 @@ type SignInService struct {
 
 type LoginResult struct {
 	Token string
-	User  *domain.User
+	User  *User
 }
 
 func (service *SignInService) Login(login string, password string) (*LoginResult, error) {

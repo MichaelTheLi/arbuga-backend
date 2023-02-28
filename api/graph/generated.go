@@ -336,28 +336,28 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Me(childComplexity), true
 
-	case "User.ecosystems":
+	case "Person.ecosystems":
 		if e.complexity.User.Ecosystems == nil {
 			break
 		}
 
 		return e.complexity.User.Ecosystems(childComplexity), true
 
-	case "User.id":
+	case "Person.id":
 		if e.complexity.User.ID == nil {
 			break
 		}
 
 		return e.complexity.User.ID(childComplexity), true
 
-	case "User.login":
+	case "Person.login":
 		if e.complexity.User.Login == nil {
 			break
 		}
 
 		return e.complexity.User.Login(childComplexity), true
 
-	case "User.name":
+	case "Person.name":
 		if e.complexity.User.Name == nil {
 			break
 		}
@@ -1648,7 +1648,7 @@ func (ec *executionContext) fieldContext_LoginResult_user(ctx context.Context, f
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Person", field.Name)
 		},
 	}
 	return fc, nil
@@ -1858,7 +1858,7 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Person", field.Name)
 		},
 	}
 	return fc, nil
@@ -2024,7 +2024,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 
 func (ec *executionContext) fieldContext_User_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "Person",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2065,7 +2065,7 @@ func (ec *executionContext) _User_login(ctx context.Context, field graphql.Colle
 
 func (ec *executionContext) fieldContext_User_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "Person",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2109,7 +2109,7 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 
 func (ec *executionContext) fieldContext_User_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "Person",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2150,7 +2150,7 @@ func (ec *executionContext) _User_ecosystems(ctx context.Context, field graphql.
 
 func (ec *executionContext) fieldContext_User_ecosystems(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "User",
+		Object:     "Person",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4481,7 +4481,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var userImplementors = []string{"User"}
+var userImplementors = []string{"Person"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
@@ -4490,7 +4490,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("User")
+			out.Values[i] = graphql.MarshalString("Person")
 		case "id":
 
 			out.Values[i] = ec._User_id(ctx, field, obj)

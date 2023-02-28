@@ -2,7 +2,6 @@ package graph
 
 import (
 	"arbuga/backend/app"
-	"arbuga/backend/domain"
 	"context"
 	"log"
 	"net/http"
@@ -55,7 +54,7 @@ func Middleware(tokenService *app.TokenService, usersGateway *app.UserGateway) f
 }
 
 // ForContext finds the user from the context. REQUIRES AuthMiddleware to have run.
-func ForContext(ctx context.Context) *domain.User {
-	raw, _ := ctx.Value(userCtxKey).(*domain.User)
+func ForContext(ctx context.Context) *app.User {
+	raw, _ := ctx.Value(userCtxKey).(*app.User)
 	return raw
 }

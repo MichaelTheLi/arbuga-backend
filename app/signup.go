@@ -2,7 +2,10 @@ package app
 
 import (
 	"arbuga/backend/domain"
+	"crypto/rand"
 	"errors"
+	"fmt"
+	"math/big"
 )
 
 type SignUpService struct {
@@ -11,7 +14,7 @@ type SignUpService struct {
 }
 
 type SignUpResult struct {
-	User *domain.User
+	User *User
 }
 
 func (service *SignUpService) SignUp(login string, password string, name string) (*SignUpResult, error) {
@@ -27,11 +30,19 @@ func (service *SignUpService) SignUp(login string, password string, name string)
 		return nil, err
 	}
 
-	newUser, errCreate := service.Gateway.CreateUser(login, hashedPassString, name)
+	randValue, _ := rand.Int(rand.Reader, big.NewInt(100))
+	newUser := domain.NewOwner(name)
+	newPerson := &User{
+		ID:           fmt.Sprintf("T%d", randValue),
+		Owner:        newUser,
+		Login:        &login,
+		PasswordHash: &hashedPassString,
+	}
+	newNewPerson, errCreate := service.Gateway.SaveUser(newPerson)
 
 	if errCreate != nil {
 		return nil, errCreate
 	}
 
-	return &SignUpResult{User: newUser}, nil
+	return &SignUpResult{User: newNewPerson}, nil
 }

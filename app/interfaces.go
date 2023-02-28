@@ -1,13 +1,9 @@
 package app
 
-import (
-	"arbuga/backend/domain"
-)
-
 type UserGateway interface {
-	GetUserByLogin(login string) (*domain.User, error)
-	GetUserByID(id string) (*domain.User, error)
-	CreateUser(login string, hash string, name string) (*domain.User, error)
+	GetUserByLogin(login string) (*User, error)
+	GetUserByID(id string) (*User, error)
+	SaveUser(*User) (*User, error)
 }
 
 type AuthService interface {
@@ -16,6 +12,6 @@ type AuthService interface {
 }
 
 type TokenService interface {
-	GenerateToken(user *domain.User) (string, error)
+	GenerateToken(user *User) (string, error)
 	GetUserIdFromToken(token string) (string, error)
 }

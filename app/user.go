@@ -34,11 +34,18 @@ type DimensionsInput struct {
 	Length *int
 }
 
-func (service *UserService) GetUserById(id string) (*domain.User, error) {
+type User struct {
+	ID           string
+	Owner        *domain.Owner
+	Login        *string
+	PasswordHash *string
+}
+
+func (service *UserService) GetUserById(id string) (*User, error) {
 	return service.Gateway.GetUserByID(id)
 }
 
-func (service *UserService) SaveEcosystem(user *domain.User, input *EcosystemInput) *EcosystemUpdateResult {
+func (service *UserService) SaveEcosystem(user *User, input *EcosystemInput) *EcosystemUpdateResult {
 	randValue, _ := rand.Int(rand.Reader, big.NewInt(100))
 	newId := fmt.Sprintf("T%d", randValue)
 	newEcosystem := &domain.Ecosystem{
@@ -52,12 +59,12 @@ func (service *UserService) SaveEcosystem(user *domain.User, input *EcosystemInp
 			GlassThickness: 0,
 		},
 	}
-	user.Ecosystems = append(user.Ecosystems, newEcosystem)
+	user.Owner.Ecosystems = append(user.Owner.Ecosystems, newEcosystem)
 
 	return service.UpdateEcosystem(user, newId, input)
 }
 
-func (service *UserService) UpdateEcosystem(user *domain.User, id string, input *EcosystemInput) *EcosystemUpdateResult {
+func (service *UserService) UpdateEcosystem(user *User, id string, input *EcosystemInput) *EcosystemUpdateResult {
 	result := EcosystemUpdateResult{
 		Success:   true,
 		Error:     nil,
@@ -66,7 +73,7 @@ func (service *UserService) UpdateEcosystem(user *domain.User, id string, input 
 
 	var ecosystemFound *domain.Ecosystem = nil
 
-	for _, v := range user.Ecosystems {
+	for _, v := range user.Owner.Ecosystems {
 		if v.ID == id {
 			ecosystemFound = v
 			break

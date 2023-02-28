@@ -2,7 +2,7 @@ package integration_test
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/tests/utils"
+	"arbuga/backend/tests/integration/utils"
 	"encoding/json"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
