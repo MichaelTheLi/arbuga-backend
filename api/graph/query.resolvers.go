@@ -18,7 +18,13 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 		return nil, errors.New("not authenticated")
 	}
 
-	return output.ConvertUser(user), nil
+	userFromService, err := r.UserService.GetUserById(user.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return output.ConvertUser(userFromService), nil
 }
 
 // Query returns QueryResolver implementation.

@@ -8,9 +8,11 @@ import (
 func ConvertEcosystem(domainEcosystem *domain.Ecosystem) *model.Ecosystem {
 	var analysis []*model.EcosystemAnalysisCategory
 
-	for _, domainAnalysisCategory := range domainEcosystem.Analysis {
-		analysisCategory := ConvertAnalysisCategory(domainAnalysisCategory)
-		analysis = append(analysis, analysisCategory)
+	if domainEcosystem.Aquarium != nil {
+		for _, domainAnalysisCategory := range domainEcosystem.Analysis {
+			analysisCategory := ConvertAnalysisCategory(domainAnalysisCategory)
+			analysis = append(analysis, analysisCategory)
+		}
 	}
 
 	var aquarium *model.AquariumGlass

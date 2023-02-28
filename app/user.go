@@ -38,7 +38,7 @@ func (service *UserService) GetUserById(id string) (*domain.User, error) {
 	return service.Gateway.GetUserByID(id)
 }
 
-func (service *UserService) SaveEcosystem(user *domain.User, input *EcosystemInput) (*EcosystemUpdateResult, error) {
+func (service *UserService) SaveEcosystem(user *domain.User, input *EcosystemInput) *EcosystemUpdateResult {
 	randValue, _ := rand.Int(rand.Reader, big.NewInt(100))
 	newId := fmt.Sprintf("T%d", randValue)
 	newEcosystem := &domain.Ecosystem{
@@ -57,7 +57,7 @@ func (service *UserService) SaveEcosystem(user *domain.User, input *EcosystemInp
 	return service.UpdateEcosystem(user, newId, input)
 }
 
-func (service *UserService) UpdateEcosystem(user *domain.User, id string, input *EcosystemInput) (*EcosystemUpdateResult, error) {
+func (service *UserService) UpdateEcosystem(user *domain.User, id string, input *EcosystemInput) *EcosystemUpdateResult {
 	result := EcosystemUpdateResult{
 		Success:   true,
 		Error:     nil,
@@ -100,5 +100,5 @@ func (service *UserService) UpdateEcosystem(user *domain.User, id string, input 
 		result.Ecosystem = ecosystemFound
 	}
 
-	return &result, nil
+	return &result
 }

@@ -19,15 +19,15 @@ func (r *mutationResolver) Login(_ context.Context, login string, password strin
 
 	if serviceLoginResult == nil || err != nil {
 		// TODO Bad error handling
-		if err.Error() != "unknown user" {
-			return nil, errors.New("error: " + err.Error())
-		} else {
+		if err.Error() == "unknown user" {
 			serviceSignupResult, signUpErr := r.SignUpService.SignUp(login, password, login)
 			if serviceSignupResult == nil || signUpErr != nil {
 				return nil, errors.New("error: " + err.Error())
 			}
 
 			serviceLoginResult, err = r.SignInService.Login(login, password)
+		} else {
+			return nil, errors.New("error: " + err.Error())
 		}
 	}
 
@@ -49,20 +49,29 @@ func (r *mutationResolver) SaveEcosystem(ctx context.Context, id *string, ecosys
 
 	appInput := input.ConvertEcosystemInput(ecosystem)
 	var domainRes *app.EcosystemUpdateResult
-	var domainErr error
 	if id != nil {
-		domainRes, domainErr = r.UserService.UpdateEcosystem(user, *id, &appInput)
+		domainRes = r.UserService.UpdateEcosystem(user, *id, &appInput)
 	} else {
-		domainRes, domainErr = r.UserService.SaveEcosystem(user, &appInput)
+		domainRes = r.UserService.SaveEcosystem(user, &appInput)
 	}
 
-	result := &model.EcosystemUpdateResult{
-		Ecosystem: output.ConvertEcosystem(domainRes.Ecosystem),
-		Success:   domainRes.Success,
-		Error:     domainRes.Error,
+	var result *model.EcosystemUpdateResult
+
+	if domainRes.Success == false {
+		result = &model.EcosystemUpdateResult{
+			Ecosystem: nil,
+			Success:   false,
+			Error:     domainRes.Error,
+		}
+	} else {
+		result = &model.EcosystemUpdateResult{
+			Ecosystem: output.ConvertEcosystem(domainRes.Ecosystem),
+			Success:   domainRes.Success,
+			Error:     domainRes.Error,
+		}
 	}
 
-	return result, domainErr
+	return result, nil
 }
 
 // Mutation returns MutationResolver implementation.
