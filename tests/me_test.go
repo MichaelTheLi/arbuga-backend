@@ -57,3 +57,16 @@ func TestNotAuthenticatedWillReceiveOnlyOneError(t *testing.T) {
 
 	assert.Len(t, data.Errors, 1)
 }
+
+func TestInvalidTokenWillReceiveError(t *testing.T) {
+	t.Skip("Should it be http error or graphql one?")
+	query := "query Me {me {id login name}}"
+	var data graphql.Response
+	token := "some_garbage"
+	utils.ExecuteGraphqlRequest(t, nil, query, "Me", &data, &token)
+
+	err := data.Errors[0]
+
+	assert.Equal(t, "me", err.Path.String())
+	assert.Equal(t, "Invalid token", err.Message)
+}
