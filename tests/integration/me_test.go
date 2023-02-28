@@ -1,9 +1,9 @@
-package main_test
+package integration_test
 
 import (
 	"arbuga/backend/api/graph/model"
 	"arbuga/backend/tests/utils"
-	json "encoding/json"
+	"encoding/json"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stretchr/testify/assert"
 	"testing"
