@@ -67,34 +67,19 @@ func BuildDefaultState() TestServerState {
 	}
 }
 
-// TODO Simplify
 func BuildStateWithUser(loginString string, passwordString string) TestServerState {
-	userGateway := &adapters.LocalUserGateway{
-		Users: make(map[string]*app.User),
-	}
-	tokenService := &adapters.JwtTokenService{
-		Secret: "tests_secret",
-	}
-	authService := &adapters.BcryptAuthService{}
-	signInService := &app.SignInService{
-		Gateway:      userGateway,
-		AuthService:  authService,
-		TokenService: tokenService,
-	}
-	signUpService := &app.SignUpService{
-		Gateway:     userGateway,
-		AuthService: authService,
-	}
-	userService := &app.UserService{
-		Gateway: userGateway,
-	}
-	resolver := graph.Resolver{
-		SignInService: signInService,
-		SignUpService: signUpService,
-		UserService:   userService,
-	}
+	state := BuildDefaultState()
 
-	hashedPass, _ := authService.HashFromPassword(passwordString)
+	state.UsersGateway.Users["testId"] = GenerateTestUser(loginString, passwordString, state)
+	token, _ := state.State.TokenService.GenerateToken(state.UsersGateway.Users["testId"])
+
+	state.Token = token
+
+	return state
+}
+
+func GenerateTestUser(loginString string, passwordString string, state TestServerState) *app.User {
+	hashedPass, _ := state.State.Resolver.SignUpService.AuthService.HashFromPassword(passwordString)
 	owner := &domain.Owner{
 		Name: "Test name",
 	}
@@ -104,19 +89,7 @@ func BuildStateWithUser(loginString string, passwordString string) TestServerSta
 		PasswordHash: &hashedPass,
 		Owner:        owner,
 	}
-	userGateway.Users["testId"] = user
-
-	token, _ := tokenService.GenerateToken(user)
-
-	return TestServerState{
-		State: api.ServerState{
-			Resolver:     &resolver,
-			TokenService: tokenService,
-			UserGateway:  userGateway,
-		},
-		Token:        token,
-		UsersGateway: userGateway,
-	}
+	return user
 }
 
 func ExecuteGraphqlRequest(t *testing.T, serverState *TestServerState, query string, operationName string, data any, token *string) {

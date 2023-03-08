@@ -12,13 +12,13 @@ import (
 func main() {
 	config := api.BuildConfigFromEnv()
 
-	router := api.BuildServer(buildServerState(), config)
+	router := api.BuildServer(BuildServerState(), config)
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, router))
 }
 
 // TODO ioc container?
-func buildServerState() api.ServerState {
+func BuildServerState() api.ServerState {
 	userGateway := &adapters.LocalUserGateway{
 		Users: make(map[string]*app.User),
 	}
