@@ -67,6 +67,12 @@ type EcosystemUpdateResult struct {
 	Error     *string    `json:"error"`
 }
 
+type Fish struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type LoginResult struct {
 	User  *User   `json:"user"`
 	Token *string `json:"token"`

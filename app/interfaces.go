@@ -1,5 +1,10 @@
 package app
 
+type FishGateway interface {
+	GetFishById(id string) (*Fish, error)
+	SearchFishBySubstring(substring string) ([]*Fish, error)
+}
+
 type UserGateway interface {
 	GetUserByLogin(login string) (*User, error)
 	GetUserByID(id string) (*User, error)

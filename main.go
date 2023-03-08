@@ -22,6 +22,9 @@ func buildServerState() api.ServerState {
 	userGateway := &adapters.LocalUserGateway{
 		Users: make(map[string]*app.User),
 	}
+	fishGateway := &adapters.LocalFishGateway{
+		Fish: make(map[string]*app.Fish),
+	}
 	tokenService := &adapters.JwtTokenService{
 		Secret: "get_this_from_env", // TODO Get secret from env
 	}
@@ -38,10 +41,14 @@ func buildServerState() api.ServerState {
 	userService := &app.UserService{
 		Gateway: userGateway,
 	}
+	fishService := &app.FishService{
+		Gateway: fishGateway,
+	}
 	resolver := graph.Resolver{
 		SignInService: signInService,
 		SignUpService: signUpService,
 		UserService:   userService,
+		FishService:   fishService,
 	}
 
 	return api.ServerState{

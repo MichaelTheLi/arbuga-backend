@@ -1,5 +1,12 @@
 type Query {
   me: User
+  fish: [Fish!]! # TODO Pagination, best practises https://graphql.org/learn/pagination/
+}
+
+type Fish {
+  id: ID!
+  name: String!
+  description: String!
 }
 
 type User {

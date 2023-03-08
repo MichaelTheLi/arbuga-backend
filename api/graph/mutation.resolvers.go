@@ -14,7 +14,7 @@ import (
 )
 
 // Login is the resolver for the login field.
-func (r *mutationResolver) Login(_ context.Context, login string, password string) (*model.LoginResult, error) {
+func (r *mutationResolver) Login(ctx context.Context, login string, password string) (*model.LoginResult, error) {
 	serviceLoginResult, err := r.SignInService.Login(login, password)
 
 	if serviceLoginResult == nil || err != nil {

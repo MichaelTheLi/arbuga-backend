@@ -14,4 +14,5 @@ type Resolver struct {
 	SignInService *app.SignInService
 	SignUpService *app.SignUpService
 	UserService   *app.UserService
+	FishService   *app.FishService
 }

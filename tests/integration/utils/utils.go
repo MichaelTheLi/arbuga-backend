@@ -19,11 +19,15 @@ type TestServerState struct {
 	State        api.ServerState
 	Token        string
 	UsersGateway *adapters.LocalUserGateway
+	FishGateway  *adapters.LocalFishGateway
 }
 
 func BuildDefaultState() TestServerState {
 	userGateway := &adapters.LocalUserGateway{
 		Users: make(map[string]*app.User),
+	}
+	fishGateway := &adapters.LocalFishGateway{
+		Fish: make(map[string]*app.Fish),
 	}
 	tokenService := &adapters.JwtTokenService{
 		Secret: "tests_secret",
@@ -41,10 +45,14 @@ func BuildDefaultState() TestServerState {
 	userService := &app.UserService{
 		Gateway: userGateway,
 	}
+	fishService := &app.FishService{
+		Gateway: fishGateway,
+	}
 	resolver := graph.Resolver{
 		SignInService: signInService,
 		SignUpService: signUpService,
 		UserService:   userService,
+		FishService:   fishService,
 	}
 
 	return TestServerState{
@@ -55,9 +63,11 @@ func BuildDefaultState() TestServerState {
 		},
 		Token:        "",
 		UsersGateway: userGateway,
+		FishGateway:  fishGateway,
 	}
 }
 
+// TODO Simplify
 func BuildStateWithUser(loginString string, passwordString string) TestServerState {
 	userGateway := &adapters.LocalUserGateway{
 		Users: make(map[string]*app.User),
