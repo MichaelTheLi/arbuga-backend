@@ -1,6 +1,8 @@
 type Query {
   me: User
-  fish: [Fish!]! # TODO Pagination, best practises https://graphql.org/learn/pagination/
+  # TODO Pagination, best practises https://graphql.org/learn/pagination/
+  # TODO Better params, pagination, etc
+  fish(substring: String): [Fish!]!
 }
 
 type Fish {

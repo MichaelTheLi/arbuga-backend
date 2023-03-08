@@ -102,7 +102,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Fish func(childComplexity int) int
+		Fish func(childComplexity int, substring *string) int
 		Me   func(childComplexity int) int
 	}
 
@@ -120,7 +120,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
-	Fish(ctx context.Context) ([]*model.Fish, error)
+	Fish(ctx context.Context, substring *string) ([]*model.Fish, error)
 }
 
 type executableSchema struct {
@@ -363,7 +363,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Fish(childComplexity), true
+		args, err := ec.field_Query_fish_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Fish(childComplexity, args["substring"].(*string)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -551,6 +556,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_fish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["substring"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("substring"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["substring"] = arg0
 	return args, nil
 }
 
@@ -2046,7 +2066,7 @@ func (ec *executionContext) _Query_fish(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Fish(rctx)
+		return ec.resolvers.Query().Fish(rctx, fc.Args["substring"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2079,6 +2099,17 @@ func (ec *executionContext) fieldContext_Query_fish(ctx context.Context, field g
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_fish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }

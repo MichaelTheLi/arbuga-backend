@@ -28,8 +28,13 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 }
 
 // Fish is the resolver for the fish field.
-func (r *queryResolver) Fish(ctx context.Context) ([]*model.Fish, error) {
-	fishList, err := r.FishService.SearchFishBySubstring("")
+func (r *queryResolver) Fish(ctx context.Context, substring *string) ([]*model.Fish, error) {
+	if substring == nil {
+		raw := ""
+		substring = &raw
+	}
+
+	fishList, err := r.FishService.SearchFishBySubstring(*substring)
 
 	if err != nil {
 		return nil, err

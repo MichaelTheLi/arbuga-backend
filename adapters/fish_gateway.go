@@ -18,7 +18,7 @@ func (gateway *LocalFishGateway) SearchFishBySubstring(substring string) ([]*app
 	var fishListFound []*app.Fish
 
 	for _, fish := range gateway.Fish {
-		if strings.Contains(fish.Fish.Name, substring) {
+		if strings.Contains(strings.ToLower(fish.Fish.Name), strings.ToLower(substring)) {
 			fishListFound = append(fishListFound, fish)
 		}
 	}
