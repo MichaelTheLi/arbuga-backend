@@ -31,18 +31,18 @@ func (service *SignUpService) SignUp(login string, password string, name string)
 	}
 
 	randValue, _ := rand.Int(rand.Reader, big.NewInt(100))
-	newUser := domain.NewOwner(name)
-	newPerson := &User{
+	newOwner := domain.NewOwner(name)
+	newUser := &User{
 		ID:           fmt.Sprintf("T%d", randValue),
-		Owner:        newUser,
+		Owner:        newOwner,
 		Login:        &login,
 		PasswordHash: &hashedPassString,
 	}
-	newNewPerson, errCreate := service.Gateway.SaveUser(newPerson)
+	SavedUser, errCreate := service.Gateway.SaveUser(newUser)
 
 	if errCreate != nil {
 		return nil, errCreate
 	}
 
-	return &SignUpResult{User: newNewPerson}, nil
+	return &SignUpResult{User: SavedUser}, nil
 }

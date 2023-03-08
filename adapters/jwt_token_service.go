@@ -16,10 +16,10 @@ type UserClaims struct {
 	Name   string
 }
 
-func (service JwtTokenService) GenerateToken(person *app.User) (string, error) {
+func (service JwtTokenService) GenerateToken(user *app.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), UserClaims{
-		UserId:           person.ID,
-		Name:             person.Owner.Name,
+		UserId:           user.ID,
+		Name:             user.Owner.Name,
 		RegisteredClaims: jwt.RegisteredClaims{},
 	})
 
