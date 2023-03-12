@@ -14,6 +14,8 @@ import (
 )
 
 // Login is the resolver for the login field.
+//
+//goland:noinspection GoUnusedParameter
 func (r *mutationResolver) Login(ctx context.Context, login string, password string) (*model.LoginResult, error) {
 	serviceLoginResult, err := r.SignInService.Login(login, password)
 
@@ -72,6 +74,28 @@ func (r *mutationResolver) SaveEcosystem(ctx context.Context, id *string, ecosys
 	}
 
 	return result, nil
+}
+
+// AddFishToEcosystem is the resolver for the addFishToEcosystem field.
+func (r *mutationResolver) AddFishToEcosystem(ctx context.Context, ecosystemID string, fishID string) (*model.AddFishResult, error) {
+	user := ForContext(ctx)
+
+	if user == nil {
+		return nil, errors.New("not authenticated")
+	}
+
+	ecosystem, err := r.UserService.AddFishToEcosystem(user, ecosystemID, fishID)
+
+	var result *model.AddFishResult
+
+	if err == nil {
+		result = &model.AddFishResult{
+			Ecosystem: output.ConvertEcosystem(ecosystem),
+		}
+		return result, nil
+	} else {
+		return nil, err
+	}
 }
 
 // Mutation returns MutationResolver implementation.

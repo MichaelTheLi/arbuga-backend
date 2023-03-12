@@ -44,6 +44,10 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddFishResult struct {
+		Ecosystem func(childComplexity int) int
+	}
+
 	AquariumGlass struct {
 		DecorationsVolume  func(childComplexity int) int
 		Dimensions         func(childComplexity int) int
@@ -98,8 +102,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login         func(childComplexity int, login string, password string) int
-		SaveEcosystem func(childComplexity int, id *string, ecosystem model.EcosystemInput) int
+		AddFishToEcosystem func(childComplexity int, ecosystemID string, fishID string) int
+		Login              func(childComplexity int, login string, password string) int
+		SaveEcosystem      func(childComplexity int, id *string, ecosystem model.EcosystemInput) int
 	}
 
 	Query struct {
@@ -119,6 +124,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (*model.LoginResult, error)
 	SaveEcosystem(ctx context.Context, id *string, ecosystem model.EcosystemInput) (*model.EcosystemUpdateResult, error)
+	AddFishToEcosystem(ctx context.Context, ecosystemID string, fishID string) (*model.AddFishResult, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
@@ -140,6 +146,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AddFishResult.ecosystem":
+		if e.complexity.AddFishResult.Ecosystem == nil {
+			break
+		}
+
+		return e.complexity.AddFishResult.Ecosystem(childComplexity), true
 
 	case "AquariumGlass.decorationsVolume":
 		if e.complexity.AquariumGlass.DecorationsVolume == nil {
@@ -344,6 +357,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginResult.User(childComplexity), true
 
+	case "Mutation.addFishToEcosystem":
+		if e.complexity.Mutation.AddFishToEcosystem == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addFishToEcosystem_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddFishToEcosystem(childComplexity, args["ecosystemId"].(string), args["fishId"].(string)), true
+
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -518,6 +543,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_addFishToEcosystem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["ecosystemId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ecosystemId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["ecosystemId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["fishId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fishId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["fishId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -648,6 +697,59 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AddFishResult_ecosystem(ctx context.Context, field graphql.CollectedField, obj *model.AddFishResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddFishResult_ecosystem(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ecosystem, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Ecosystem)
+	fc.Result = res
+	return ec.marshalOEcosystem2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐEcosystem(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddFishResult_ecosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddFishResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Ecosystem_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Ecosystem_name(ctx, field)
+			case "aquarium":
+				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
+			case "analysis":
+				return ec.fieldContext_Ecosystem_analysis(ctx, field)
+			case "fish":
+				return ec.fieldContext_Ecosystem_fish(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _AquariumGlass_dimensions(ctx context.Context, field graphql.CollectedField, obj *model.AquariumGlass) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AquariumGlass_dimensions(ctx, field)
@@ -2084,6 +2186,64 @@ func (ec *executionContext) fieldContext_Mutation_saveEcosystem(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_saveEcosystem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addFishToEcosystem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addFishToEcosystem(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddFishToEcosystem(rctx, fc.Args["ecosystemId"].(string), fc.Args["fishId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.AddFishResult)
+	fc.Result = res
+	return ec.marshalNAddFishResult2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐAddFishResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addFishToEcosystem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ecosystem":
+				return ec.fieldContext_AddFishResult_ecosystem(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddFishResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addFishToEcosystem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4483,6 +4643,31 @@ func (ec *executionContext) unmarshalInputEcosystemInput(ctx context.Context, ob
 
 // region    **************************** object.gotpl ****************************
 
+var addFishResultImplementors = []string{"AddFishResult"}
+
+func (ec *executionContext) _AddFishResult(ctx context.Context, sel ast.SelectionSet, obj *model.AddFishResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addFishResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddFishResult")
+		case "ecosystem":
+
+			out.Values[i] = ec._AddFishResult_ecosystem(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var aquariumGlassImplementors = []string{"AquariumGlass"}
 
 func (ec *executionContext) _AquariumGlass(ctx context.Context, sel ast.SelectionSet, obj *model.AquariumGlass) graphql.Marshaler {
@@ -4858,6 +5043,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_saveEcosystem(ctx, field)
+			})
+
+		case "addFishToEcosystem":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addFishToEcosystem(ctx, field)
 			})
 
 		default:
@@ -5326,6 +5517,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAddFishResult2arbugaᚋbackendᚋapiᚋgraphᚋmodelᚐAddFishResult(ctx context.Context, sel ast.SelectionSet, v model.AddFishResult) graphql.Marshaler {
+	return ec._AddFishResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAddFishResult2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐAddFishResult(ctx context.Context, sel ast.SelectionSet, v *model.AddFishResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AddFishResult(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNAnalysisStatus2arbugaᚋbackendᚋapiᚋgraphᚋmodelᚐAnalysisStatus(ctx context.Context, v interface{}) (model.AnalysisStatus, error) {
 	var res model.AnalysisStatus

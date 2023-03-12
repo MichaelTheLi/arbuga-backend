@@ -43,7 +43,8 @@ func BuildDefaultState() TestServerState {
 		AuthService: authService,
 	}
 	userService := &app.UserService{
-		Gateway: userGateway,
+		Gateway:     userGateway,
+		FishGateway: fishGateway,
 	}
 	fishService := &app.FishService{
 		Gateway: fishGateway,

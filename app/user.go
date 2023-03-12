@@ -3,12 +3,14 @@ package app
 import (
 	"arbuga/backend/domain"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 )
 
 type UserService struct {
-	Gateway UserGateway
+	Gateway     UserGateway
+	FishGateway FishGateway
 }
 
 type EcosystemUpdateResult struct {
@@ -128,4 +130,30 @@ func (service *UserService) UpdateEcosystem(user *User, id string, input *Ecosys
 	}
 
 	return &result
+}
+
+func (service *UserService) AddFishToEcosystem(user *User, ecosystemId string, fishId string) (*Ecosystem, error) {
+	var ecosystemFound *Ecosystem = nil
+
+	for _, v := range user.Ecosystems {
+		if v.ID == ecosystemId {
+			ecosystemFound = v
+			break
+		}
+	}
+
+	if ecosystemFound == nil {
+		return nil, errors.New("invalid ecosystem")
+	}
+
+	fish, err := service.FishGateway.GetFishById(fishId)
+
+	if err != nil {
+		return nil, errors.New("invalid fish")
+	}
+
+	// TODO Add to the domain ecosystem?
+	ecosystemFound.Fish = append(ecosystemFound.Fish, fish)
+
+	return ecosystemFound, nil
 }

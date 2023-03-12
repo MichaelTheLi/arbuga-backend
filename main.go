@@ -20,6 +20,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+config.Port, router))
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func seedServerState(state *api.ServerState) {
 	res, _ := state.Resolver.SignUpService.SignUp("test", "test", "Test User")
 	width := 20
@@ -93,7 +94,8 @@ func BuildServerState() api.ServerState {
 		AuthService: authService,
 	}
 	userService := &app.UserService{
-		Gateway: userGateway,
+		Gateway:     userGateway,
+		FishGateway: fishGateway,
 	}
 	fishService := &app.FishService{
 		Gateway: fishGateway,

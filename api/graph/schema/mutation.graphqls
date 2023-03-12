@@ -1,6 +1,7 @@
 type Mutation {
   login(login: String!, password: String!): LoginResult
   saveEcosystem(id: ID, ecosystem: EcosystemInput!): EcosystemUpdateResult!
+  addFishToEcosystem(ecosystemId: ID!, fishId: ID!): AddFishResult!
 }
 
 type LoginResult {
@@ -30,4 +31,9 @@ type EcosystemUpdateResult {
   ecosystem: Ecosystem
   success: Boolean!
   error: String
+}
+
+
+type AddFishResult {
+  ecosystem: Ecosystem
 }

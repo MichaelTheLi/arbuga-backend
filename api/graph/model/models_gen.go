@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+type AddFishResult struct {
+	Ecosystem *Ecosystem `json:"ecosystem"`
+}
+
 type AquariumGlass struct {
 	Dimensions         *Dimensions `json:"dimensions"`
 	GlassThickness     int         `json:"glassThickness"`
