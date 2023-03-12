@@ -6,4 +6,5 @@ type User struct {
 	Name       string       `json:"name"`
 	Ecosystems []*Ecosystem `json:"ecosystems"`
 	Ecosystem  *Ecosystem   `json:"ecosystem"`
+	Fish       []*Fish      `json:"fish"`
 }

@@ -78,8 +78,11 @@ func BuildStateWithUser(loginString string, passwordString string) TestServerSta
 	return state
 }
 
-func BuildStateWithFish() TestServerState {
-	state := BuildDefaultState()
+func BuildStateWithFish(state *TestServerState) TestServerState {
+	if state == nil {
+		defaultState := BuildDefaultState()
+		state = &defaultState
+	}
 	newFish1 := generateFish("test1", "Rasbora", "Desc 1")
 	state.FishGateway.Fish[newFish1.Id] = newFish1
 	newFish2 := generateFish("test2", "Corydoras", "Desc 2")
@@ -90,7 +93,7 @@ func BuildStateWithFish() TestServerState {
 	state.FishGateway.Fish[newFish4.Id] = newFish4
 	newFish5 := generateFish("test5", "Rummy-nose tetra", "Desc 5")
 	state.FishGateway.Fish[newFish5.Id] = newFish5
-	return state
+	return *state
 }
 
 func generateFish(id string, name string, description string) *app.Fish {

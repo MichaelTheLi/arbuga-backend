@@ -38,7 +38,7 @@ func executeGetFish(t *testing.T, id string) (utils.TestServerState, graphql.Res
 	query := "query Fish($id: ID!) {fish(id: $id) {id name description}}"
 	variables := fmt.Sprintf("{ \"id\": \"%s\"}", id)
 	var data graphql.Response
-	state := utils.BuildStateWithFish()
+	state := utils.BuildStateWithFish(nil)
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "Fish", &data, nil)
 

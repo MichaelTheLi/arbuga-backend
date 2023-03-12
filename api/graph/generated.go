@@ -109,6 +109,7 @@ type ComplexityRoot struct {
 
 	User struct {
 		Ecosystems func(childComplexity int) int
+		Fish       func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Login      func(childComplexity int) int
 		Name       func(childComplexity int) int
@@ -397,6 +398,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Ecosystems(childComplexity), true
+
+	case "User.fish":
+		if e.complexity.User.Fish == nil {
+			break
+		}
+
+		return e.complexity.User.Fish(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -1864,6 +1872,8 @@ func (ec *executionContext) fieldContext_LoginResult_user(ctx context.Context, f
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
+			case "fish":
+				return ec.fieldContext_User_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2074,6 +2084,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
+			case "fish":
+				return ec.fieldContext_User_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2504,6 +2516,55 @@ func (ec *executionContext) fieldContext_User_ecosystems(ctx context.Context, fi
 				return ec.fieldContext_Ecosystem_analysis(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_fish(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_fish(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fish, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Fish)
+	fc.Result = res
+	return ec.marshalOFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_fish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Fish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Fish_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Fish_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
 		},
 	}
 	return fc, nil
@@ -4933,6 +4994,10 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._User_ecosystems(ctx, field, obj)
 
+		case "fish":
+
+			out.Values[i] = ec._User_fish(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5876,6 +5941,53 @@ func (ec *executionContext) marshalOEcosystemAnalysisCategory2ᚕᚖarbugaᚋbac
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNEcosystemAnalysisCategory2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐEcosystemAnalysisCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Fish) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

@@ -62,7 +62,7 @@ func TestFishRequestWithRandomStringWillNotFindAnyFish(t *testing.T) {
 func executeGetFishList(t *testing.T) (utils.TestServerState, graphql.Response, FishListResponse, error) {
 	query := "query FishList {fishList {id name description}}"
 	var data graphql.Response
-	state := utils.BuildStateWithFish()
+	state := utils.BuildStateWithFish(nil)
 
 	utils.ExecuteGraphqlRequest(t, &state, query, "FishList", &data, nil)
 
@@ -75,7 +75,7 @@ func executeSearchFish(t *testing.T, substring string) (utils.TestServerState, g
 	query := "query FishList($substring: String!) {fishList(substring: $substring) {id name description}}"
 	variables := fmt.Sprintf("{ \"substring\": \"%s\"}", substring)
 	var data graphql.Response
-	state := utils.BuildStateWithFish()
+	state := utils.BuildStateWithFish(nil)
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "FishList", &data, nil)
 

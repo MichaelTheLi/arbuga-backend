@@ -17,6 +17,7 @@ type User {
   login: String
   name: String!
   ecosystems: [Ecosystem!]
+  fish: [Fish!]
 }
 
 type Ecosystem {
