@@ -15,7 +15,6 @@ func ConvertFish(domainModel *app.Fish) *model.Fish {
 
 func ConvertFishList(domainList []*app.Fish) []*model.Fish {
 	var fishList []*model.Fish
-	fishList = []*model.Fish{}
 
 	for _, fish := range domainList {
 		modelFish := ConvertFish(fish)

@@ -39,6 +39,7 @@ type Ecosystem struct {
 	Name     string                       `json:"name"`
 	Aquarium *AquariumGlass               `json:"aquarium"`
 	Analysis []*EcosystemAnalysisCategory `json:"analysis"`
+	Fish     []*Fish                      `json:"fish"`
 }
 
 type EcosystemAnalysisCategory struct {
@@ -76,6 +77,13 @@ type Fish struct {
 type LoginResult struct {
 	User  *User   `json:"user"`
 	Token *string `json:"token"`
+}
+
+type User struct {
+	ID         string       `json:"id"`
+	Login      *string      `json:"login"`
+	Name       string       `json:"name"`
+	Ecosystems []*Ecosystem `json:"ecosystems"`
 }
 
 type AnalysisStatus string

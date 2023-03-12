@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"arbuga/backend/api/graph/model"
+	"arbuga/backend/app"
 	"arbuga/backend/domain"
 	"arbuga/backend/tests/integration/utils"
 	"encoding/json"
@@ -28,10 +29,10 @@ func TestSaveEcosystemCreatedEntity(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
 
-	assert.Len(t, user.Owner.Ecosystems, 1)
-	assert.Equal(t, "tEst eCosystem", user.Owner.Ecosystems[0].Name)
-	assert.Equal(t, 10, user.Owner.Ecosystems[0].Aquarium.Dimensions.Width)
-	assert.Equal(t, 0, user.Owner.Ecosystems[0].Aquarium.Dimensions.Height)
+	assert.Len(t, user.Ecosystems, 1)
+	assert.Equal(t, "tEst eCosystem", user.Ecosystems[0].Ecosystem.Name)
+	assert.Equal(t, 10, user.Ecosystems[0].Ecosystem.Aquarium.Dimensions.Width)
+	assert.Equal(t, 0, user.Ecosystems[0].Ecosystem.Aquarium.Dimensions.Height)
 }
 
 func TestSaveEcosystemUpdatesEntity(t *testing.T) {
@@ -42,21 +43,7 @@ func TestSaveEcosystemUpdatesEntity(t *testing.T) {
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
 	oldUser, _ := state.State.UserGateway.GetUserByLogin("testLogin")
-	oldUser.Owner.Ecosystems = append(oldUser.Owner.Ecosystems, &domain.Ecosystem{
-		ID:   "testId1",
-		Name: "Old Name",
-		Aquarium: &domain.AquariumGlass{
-			Dimensions: &domain.Dimensions{
-				Width:  10,
-				Height: 10,
-				Length: 10,
-			},
-			GlassThickness:     1,
-			SubstrateThickness: nil,
-			DecorationsVolume:  nil,
-		},
-		Analysis: nil,
-	})
+	addTestEcosystem(oldUser)
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "SaveEcosystem", &data, &state.Token)
 	user, err := state.State.UserGateway.GetUserByLogin("testLogin")
@@ -64,11 +51,11 @@ func TestSaveEcosystemUpdatesEntity(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
 
-	assert.Len(t, user.Owner.Ecosystems, 1)
-	assert.Equal(t, "tEst eCosystem Updated", user.Owner.Ecosystems[0].Name)
-	assert.Equal(t, 11, user.Owner.Ecosystems[0].Aquarium.Dimensions.Width)
-	assert.Equal(t, 12, user.Owner.Ecosystems[0].Aquarium.Dimensions.Height)
-	assert.Equal(t, 13, user.Owner.Ecosystems[0].Aquarium.Dimensions.Length)
+	assert.Len(t, user.Ecosystems, 1)
+	assert.Equal(t, "tEst eCosystem Updated", user.Ecosystems[0].Ecosystem.Name)
+	assert.Equal(t, 11, user.Ecosystems[0].Ecosystem.Aquarium.Dimensions.Width)
+	assert.Equal(t, 12, user.Ecosystems[0].Ecosystem.Aquarium.Dimensions.Height)
+	assert.Equal(t, 13, user.Ecosystems[0].Ecosystem.Aquarium.Dimensions.Length)
 }
 
 func TestCantSaveOrUpdateEcosystemIfNotAuthenticated(t *testing.T) {
@@ -79,21 +66,7 @@ func TestCantSaveOrUpdateEcosystemIfNotAuthenticated(t *testing.T) {
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
 	oldUser, _ := state.State.UserGateway.GetUserByLogin("testLogin")
-	oldUser.Owner.Ecosystems = append(oldUser.Owner.Ecosystems, &domain.Ecosystem{
-		ID:   "testId1",
-		Name: "Old Name",
-		Aquarium: &domain.AquariumGlass{
-			Dimensions: &domain.Dimensions{
-				Width:  10,
-				Height: 10,
-				Length: 10,
-			},
-			GlassThickness:     1,
-			SubstrateThickness: nil,
-			DecorationsVolume:  nil,
-		},
-		Analysis: nil,
-	})
+	addTestEcosystem(oldUser)
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "SaveEcosystem", &data, nil)
 	user, userErr := state.State.UserGateway.GetUserByLogin("testLogin")
@@ -101,8 +74,8 @@ func TestCantSaveOrUpdateEcosystemIfNotAuthenticated(t *testing.T) {
 	assert.Nil(t, userErr)
 	assert.NotNil(t, user)
 
-	assert.Len(t, user.Owner.Ecosystems, 1)
-	assert.Equal(t, "Old Name", user.Owner.Ecosystems[0].Name)
+	assert.Len(t, user.Ecosystems, 1)
+	assert.Equal(t, "Old Name", user.Ecosystems[0].Ecosystem.Name)
 
 	err := data.Errors[0]
 
@@ -118,21 +91,7 @@ func TestUpdateInvalidIdWillError(t *testing.T) {
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
 	oldUser, _ := state.State.UserGateway.GetUserByLogin("testLogin")
-	oldUser.Owner.Ecosystems = append(oldUser.Owner.Ecosystems, &domain.Ecosystem{
-		ID:   "testId1",
-		Name: "Old Name",
-		Aquarium: &domain.AquariumGlass{
-			Dimensions: &domain.Dimensions{
-				Width:  10,
-				Height: 10,
-				Length: 10,
-			},
-			GlassThickness:     1,
-			SubstrateThickness: nil,
-			DecorationsVolume:  nil,
-		},
-		Analysis: nil,
-	})
+	addTestEcosystem(oldUser)
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "SaveEcosystem", &data, &state.Token)
 	user, userErr := state.State.UserGateway.GetUserByLogin("testLogin")
@@ -140,8 +99,8 @@ func TestUpdateInvalidIdWillError(t *testing.T) {
 	assert.Nil(t, userErr)
 	assert.NotNil(t, user)
 
-	assert.Len(t, user.Owner.Ecosystems, 1)
-	assert.Equal(t, "Old Name", user.Owner.Ecosystems[0].Name)
+	assert.Len(t, user.Ecosystems, 1)
+	assert.Equal(t, "Old Name", user.Ecosystems[0].Ecosystem.Name)
 
 	var saveData SaveEcosystemResponse
 	err := json.Unmarshal(data.Data, &saveData)
@@ -149,4 +108,24 @@ func TestUpdateInvalidIdWillError(t *testing.T) {
 	assert.False(t, saveData.SaveEcosystem.Success)
 	assert.Nil(t, saveData.SaveEcosystem.Ecosystem)
 	assert.Equal(t, "Ecosystem not found", *saveData.SaveEcosystem.Error)
+}
+
+func addTestEcosystem(oldUser *app.User) {
+	oldUser.Ecosystems = append(oldUser.Ecosystems, &app.Ecosystem{
+		ID: "testId1",
+		Ecosystem: &domain.Ecosystem{
+			Name: "Old Name",
+			Aquarium: &domain.AquariumGlass{
+				Dimensions: &domain.Dimensions{
+					Width:  10,
+					Height: 10,
+					Length: 10,
+				},
+				GlassThickness:     1,
+				SubstrateThickness: nil,
+				DecorationsVolume:  nil,
+			},
+			Analysis: nil,
+		},
+	})
 }

@@ -8,7 +8,7 @@ import (
 func ConvertUser(domainUser *app.User) *model.User {
 	var ecosystems []*model.Ecosystem
 
-	for _, ecosystem := range domainUser.Owner.Ecosystems {
+	for _, ecosystem := range domainUser.Ecosystems {
 		newEcosystem := ConvertEcosystem(ecosystem)
 		ecosystems = append(ecosystems, newEcosystem)
 	}
@@ -18,6 +18,5 @@ func ConvertUser(domainUser *app.User) *model.User {
 		Login:      domainUser.Login,
 		Name:       domainUser.Owner.Name,
 		Ecosystems: ecosystems,
-		Ecosystem:  nil,
 	}
 }

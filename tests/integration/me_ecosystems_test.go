@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"arbuga/backend/api/converters/output"
+	"arbuga/backend/app"
 	"arbuga/backend/domain"
 	"arbuga/backend/tests/integration/utils"
 	"encoding/json"
@@ -14,12 +15,18 @@ func TestEcosystemsValidCount(t *testing.T) {
 	query := "query Me {me {id ecosystems { id }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Ecosystems = []*app.Ecosystem{
 		{
 			ID: "ecosystem1",
+			Ecosystem: &domain.Ecosystem{
+				Name: "Ecosystem 1",
+			},
 		},
 		{
 			ID: "ecosystem2",
+			Ecosystem: &domain.Ecosystem{
+				Name: "Ecosystem 2",
+			},
 		},
 	}
 
@@ -29,17 +36,19 @@ func TestEcosystemsValidCount(t *testing.T) {
 	err := json.Unmarshal(data.Data, &meData)
 	assert.Nil(t, err)
 
-	assert.Len(t, meData.Me.Ecosystems, len(state.UsersGateway.Users["testId"].Owner.Ecosystems))
+	assert.Len(t, meData.Me.Ecosystems, len(state.UsersGateway.Users["testId"].Ecosystems))
 }
 
 func TestEcosystemsBasicDataReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id name }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Ecosystems = []*app.Ecosystem{
 		{
-			ID:   "ecosystem1",
-			Name: "Test Ecosystem Name",
+			ID: "ecosystem1",
+			Ecosystem: &domain.Ecosystem{
+				Name: "Ecosystem 1",
+			},
 		},
 	}
 
@@ -59,18 +68,21 @@ func TestEcosystemsAquariumDimensionsReceived(t *testing.T) {
 	state := utils.BuildStateWithUser("testLogin", "testPass")
 	thickness := 15
 	volume := 18
-	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Ecosystems = []*app.Ecosystem{
 		{
 			ID: "ecosystem1",
-			Aquarium: &domain.AquariumGlass{
-				Dimensions: &domain.Dimensions{
-					Width:  11,
-					Height: 16,
-					Length: 21,
+			Ecosystem: &domain.Ecosystem{
+				Name: "Ecosystem 1",
+				Aquarium: &domain.AquariumGlass{
+					Dimensions: &domain.Dimensions{
+						Width:  11,
+						Height: 16,
+						Length: 21,
+					},
+					GlassThickness:     12,
+					SubstrateThickness: &thickness,
+					DecorationsVolume:  &volume,
 				},
-				GlassThickness:     12,
-				SubstrateThickness: &thickness,
-				DecorationsVolume:  &volume,
 			},
 		},
 	}
@@ -91,36 +103,39 @@ func TestEcosystemsAnalysisReceived(t *testing.T) {
 	query := "query Me {me {id ecosystems { id analysis { id name description status messages { id name description status } } }}}"
 	var data graphql.Response
 	state := utils.BuildStateWithUser("testLogin", "testPass")
-	state.UsersGateway.Users["testId"].Owner.Ecosystems = []*domain.Ecosystem{
+	state.UsersGateway.Users["testId"].Ecosystems = []*app.Ecosystem{
 		{
 			ID: "ecosystem1",
-			Analysis: []*domain.EcosystemAnalysisCategory{
-				{
-					ID:          "test1Category",
-					Name:        "CategoryOne",
-					Description: "TestDescr1",
-					Status:      "ok",
-					Messages: []*domain.EcosystemAnalysisMessage{
-						{
-							ID:          "test1Message",
-							Name:        "Test1Msg",
-							Description: "TestDescr1Msg",
-							Status:      "bad",
-						},
-						{
-							ID:          "test2Message",
-							Name:        "Test2Msg",
-							Description: "TestDescr2Msg",
-							Status:      "moderate",
+			Ecosystem: &domain.Ecosystem{
+				Name: "Ecosystem 1",
+				Analysis: []*domain.EcosystemAnalysisCategory{
+					{
+						ID:          "test1Category",
+						Name:        "CategoryOne",
+						Description: "TestDescr1",
+						Status:      "ok",
+						Messages: []*domain.EcosystemAnalysisMessage{
+							{
+								ID:          "test1Message",
+								Name:        "Test1Msg",
+								Description: "TestDescr1Msg",
+								Status:      "bad",
+							},
+							{
+								ID:          "test2Message",
+								Name:        "Test2Msg",
+								Description: "TestDescr2Msg",
+								Status:      "moderate",
+							},
 						},
 					},
-				},
-				{
-					ID:          "test2Category",
-					Name:        "CategoryTwo",
-					Description: "TestDescr2",
-					Status:      "moderate",
-					Messages:    []*domain.EcosystemAnalysisMessage{},
+					{
+						ID:          "test2Category",
+						Name:        "CategoryTwo",
+						Description: "TestDescr2",
+						Status:      "moderate",
+						Messages:    []*domain.EcosystemAnalysisMessage{},
+					},
 				},
 			},
 		},

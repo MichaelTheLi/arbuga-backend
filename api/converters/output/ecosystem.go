@@ -2,28 +2,29 @@ package output
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/domain"
+	"arbuga/backend/app"
 )
 
-func ConvertEcosystem(domainEcosystem *domain.Ecosystem) *model.Ecosystem {
+func ConvertEcosystem(domainEcosystem *app.Ecosystem) *model.Ecosystem {
 	var analysis []*model.EcosystemAnalysisCategory
 
-	if domainEcosystem.Aquarium != nil {
-		for _, domainAnalysisCategory := range domainEcosystem.Analysis {
+	if domainEcosystem.Ecosystem.Aquarium != nil {
+		for _, domainAnalysisCategory := range domainEcosystem.Ecosystem.Analysis {
 			analysisCategory := ConvertAnalysisCategory(domainAnalysisCategory)
 			analysis = append(analysis, analysisCategory)
 		}
 	}
 
 	var aquarium *model.AquariumGlass
-	if domainEcosystem.Aquarium != nil {
-		aquarium = ConvertAquarium(domainEcosystem.Aquarium)
+	if domainEcosystem.Ecosystem.Aquarium != nil {
+		aquarium = ConvertAquarium(domainEcosystem.Ecosystem.Aquarium)
 	}
 
 	return &model.Ecosystem{
 		ID:       domainEcosystem.ID,
-		Name:     domainEcosystem.Name,
+		Name:     domainEcosystem.Ecosystem.Name,
 		Aquarium: aquarium,
 		Analysis: analysis,
+		Fish:     ConvertFishList(domainEcosystem.Fish),
 	}
 }

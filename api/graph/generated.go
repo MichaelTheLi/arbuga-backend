@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 	Ecosystem struct {
 		Analysis func(childComplexity int) int
 		Aquarium func(childComplexity int) int
+		Fish     func(childComplexity int) int
 		ID       func(childComplexity int) int
 		Name     func(childComplexity int) int
 	}
@@ -109,7 +110,6 @@ type ComplexityRoot struct {
 
 	User struct {
 		Ecosystems func(childComplexity int) int
-		Fish       func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Login      func(childComplexity int) int
 		Name       func(childComplexity int) int
@@ -203,6 +203,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Ecosystem.Aquarium(childComplexity), true
+
+	case "Ecosystem.fish":
+		if e.complexity.Ecosystem.Fish == nil {
+			break
+		}
+
+		return e.complexity.Ecosystem.Fish(childComplexity), true
 
 	case "Ecosystem.id":
 		if e.complexity.Ecosystem.ID == nil {
@@ -398,13 +405,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Ecosystems(childComplexity), true
-
-	case "User.fish":
-		if e.complexity.User.Fish == nil {
-			break
-		}
-
-		return e.complexity.User.Fish(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -1154,6 +1154,55 @@ func (ec *executionContext) fieldContext_Ecosystem_analysis(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Ecosystem_fish(ctx context.Context, field graphql.CollectedField, obj *model.Ecosystem) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ecosystem_fish(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fish, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Fish)
+	fc.Result = res
+	return ec.marshalOFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ecosystem_fish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ecosystem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Fish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Fish_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Fish_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _EcosystemAnalysisCategory_id(ctx context.Context, field graphql.CollectedField, obj *model.EcosystemAnalysisCategory) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EcosystemAnalysisCategory_id(ctx, field)
 	if err != nil {
@@ -1604,6 +1653,8 @@ func (ec *executionContext) fieldContext_EcosystemUpdateResult_ecosystem(ctx con
 				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
 			case "analysis":
 				return ec.fieldContext_Ecosystem_analysis(ctx, field)
+			case "fish":
+				return ec.fieldContext_Ecosystem_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
 		},
@@ -1872,8 +1923,6 @@ func (ec *executionContext) fieldContext_LoginResult_user(ctx context.Context, f
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
-			case "fish":
-				return ec.fieldContext_User_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2084,8 +2133,6 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_name(ctx, field)
 			case "ecosystems":
 				return ec.fieldContext_User_ecosystems(ctx, field)
-			case "fish":
-				return ec.fieldContext_User_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2514,57 +2561,10 @@ func (ec *executionContext) fieldContext_User_ecosystems(ctx context.Context, fi
 				return ec.fieldContext_Ecosystem_aquarium(ctx, field)
 			case "analysis":
 				return ec.fieldContext_Ecosystem_analysis(ctx, field)
+			case "fish":
+				return ec.fieldContext_Ecosystem_fish(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Ecosystem", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_fish(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_fish(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Fish, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Fish)
-	fc.Result = res
-	return ec.marshalOFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_fish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Fish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Fish_name(ctx, field)
-			case "description":
-				return ec.fieldContext_Fish_description(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
 		},
 	}
 	return fc, nil
@@ -4603,6 +4603,10 @@ func (ec *executionContext) _Ecosystem(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = ec._Ecosystem_analysis(ctx, field, obj)
 
+		case "fish":
+
+			out.Values[i] = ec._Ecosystem_fish(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4993,10 +4997,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "ecosystems":
 
 			out.Values[i] = ec._User_ecosystems(ctx, field, obj)
-
-		case "fish":
-
-			out.Values[i] = ec._User_fish(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
