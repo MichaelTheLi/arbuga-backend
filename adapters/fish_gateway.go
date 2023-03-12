@@ -25,3 +25,8 @@ func (gateway *LocalFishGateway) SearchFishBySubstring(substring string) ([]*app
 
 	return fishListFound, nil
 }
+
+func (gateway *LocalFishGateway) SaveFish(fish *app.Fish) (*app.Fish, error) {
+	gateway.Fish[fish.Id] = fish
+	return fish, nil
+}

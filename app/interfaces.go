@@ -3,6 +3,7 @@ package app
 type FishGateway interface {
 	GetFishById(id string) (*Fish, error)
 	SearchFishBySubstring(substring string) ([]*Fish, error)
+	SaveFish(*Fish) (*Fish, error)
 }
 
 type UserGateway interface {
