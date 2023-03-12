@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"arbuga/backend/app"
+	"errors"
 	"strings"
 )
 
@@ -10,7 +11,10 @@ type LocalFishGateway struct {
 }
 
 func (gateway *LocalFishGateway) GetFishById(id string) (*app.Fish, error) {
-	fish, _ := gateway.Fish[id]
+	fish, success := gateway.Fish[id]
+	if success != true {
+		return nil, errors.New("fish not found")
+	}
 	return fish, nil
 }
 

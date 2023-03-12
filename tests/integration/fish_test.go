@@ -2,8 +2,6 @@ package integration_test
 
 import (
 	"arbuga/backend/api/graph/model"
-	"arbuga/backend/app"
-	"arbuga/backend/domain"
 	"arbuga/backend/tests/integration/utils"
 	"encoding/json"
 	"fmt"
@@ -13,100 +11,40 @@ import (
 )
 
 type FishResponse struct {
-	Fish []*model.Fish `json:"fish"`
+	Fish *model.Fish `json:"fish"`
 }
 
-func TestFishRequestWillReceiveData(t *testing.T) {
-	state, _, fishListData, err := executeGetFish(t)
-	assert.Nil(t, err)
+func TestFishFoundById(t *testing.T) {
+	idInTest := "test2"
+	state, _, fishData := executeGetFish(t, idInTest)
 
-	assert.NotEmpty(t, fishListData.Fish)
-	assert.Len(t, fishListData.Fish, len(state.FishGateway.Fish))
+	assert.NotEmpty(t, fishData.Fish)
+	assert.Equal(t, fishData.Fish.ID, idInTest)
+	assert.Equal(t, fishData.Fish.Name, state.FishGateway.Fish[idInTest].Fish.Name)
 }
 
-func TestFishRequestWillFindCorrectSingleFish(t *testing.T) {
-	_, _, fishListData, err := executeSearchFish(t, "Bolivian ram")
-	assert.Nil(t, err)
+func TestFishNoFoundByInvalidId(t *testing.T) {
+	idInTest := "mz1xa23jgl5sal"
+	_, data, fishData := executeGetFish(t, idInTest)
 
-	assert.NotEmpty(t, fishListData.Fish)
-	assert.Len(t, fishListData.Fish, 1)
-	assert.Equal(t, fishListData.Fish[0].Name, "Bolivian ram")
+	assert.Empty(t, fishData.Fish)
+	assert.NotEmpty(t, data.Errors)
+	assert.Len(t, data.Errors, 1)
+	assert.Equal(t, "fish", data.Errors[0].Path.String())
+	assert.Equal(t, "fish not found", data.Errors[0].Message)
 }
 
-func TestFishRequestWillFindCorrectListOfFish(t *testing.T) {
-	_, _, fishListData, err := executeSearchFish(t, "tetra")
-	assert.Nil(t, err)
-
-	assert.NotEmpty(t, fishListData.Fish)
-	assert.Len(t, fishListData.Fish, 2)
-
-	assert.Equal(t, fishListData.Fish[0].Name, "Neon tetra")
-	assert.Equal(t, fishListData.Fish[1].Name, "Rummy-nose tetra")
-}
-
-func TestFishRequestWithDifferentCaseWillFindCorrectSingleFish(t *testing.T) {
-	_, _, fishListData, err := executeSearchFish(t, "BoLiViAn RaM")
-	assert.Nil(t, err)
-
-	assert.NotEmpty(t, fishListData.Fish)
-	assert.Len(t, fishListData.Fish, 1)
-	assert.Equal(t, fishListData.Fish[0].Name, "Bolivian ram")
-}
-
-func TestFishRequestWithRandomStringWillNotFindAnyFish(t *testing.T) {
-	_, _, fishListData, err := executeSearchFish(t, "lkasfaglas asdas123 123 124ljkasdl")
-	assert.Nil(t, err)
-
-	assert.NotNil(t, fishListData.Fish)
-	assert.Len(t, fishListData.Fish, 0)
-}
-
-func executeGetFish(t *testing.T) (utils.TestServerState, graphql.Response, FishResponse, error) {
-	query := "query Fish {fish {id name description}}"
+func executeGetFish(t *testing.T, id string) (utils.TestServerState, graphql.Response, FishResponse) {
+	query := "query Fish($id: ID!) {fish(id: $id) {id name description}}"
+	variables := fmt.Sprintf("{ \"id\": \"%s\"}", id)
 	var data graphql.Response
-	state := BuildStateWithFish()
-
-	utils.ExecuteGraphqlRequest(t, &state, query, "Fish", &data, nil)
-
-	var fishListData FishResponse
-	err := json.Unmarshal(data.Data, &fishListData)
-	return state, data, fishListData, err
-}
-
-func executeSearchFish(t *testing.T, substring string) (utils.TestServerState, graphql.Response, FishResponse, error) {
-	query := "query Fish($substring: String!) {fish(substring: $substring) {id name description}}"
-	variables := fmt.Sprintf("{ \"substring\": \"%s\"}", substring)
-	var data graphql.Response
-	state := BuildStateWithFish()
+	state := utils.BuildStateWithFish()
 
 	utils.ExecuteGraphqlRequestWithVariables(t, &state, query, variables, "Fish", &data, nil)
 
-	var fishListData FishResponse
-	err := json.Unmarshal(data.Data, &fishListData)
-	return state, data, fishListData, err
-}
+	var fishData FishResponse
+	err := json.Unmarshal(data.Data, &fishData)
+	assert.Nil(t, err)
 
-func BuildStateWithFish() utils.TestServerState {
-	state := utils.BuildDefaultState()
-	newFish1 := generateFish("test1", "Rasbora", "Desc 1")
-	state.FishGateway.Fish[newFish1.Id] = newFish1
-	newFish2 := generateFish("test2", "Corydoras", "Desc 2")
-	state.FishGateway.Fish[newFish2.Id] = newFish2
-	newFish3 := generateFish("test3", "Bolivian ram", "Desc 3")
-	state.FishGateway.Fish[newFish3.Id] = newFish3
-	newFish4 := generateFish("test4", "Neon tetra", "Desc 4")
-	state.FishGateway.Fish[newFish4.Id] = newFish4
-	newFish5 := generateFish("test5", "Rummy-nose tetra", "Desc 5")
-	state.FishGateway.Fish[newFish5.Id] = newFish5
-	return state
-}
-
-func generateFish(id string, name string, description string) *app.Fish {
-	return &app.Fish{
-		Id: id,
-		Fish: &domain.Fish{
-			Name:        name,
-			Description: description,
-		},
-	}
+	return state, data, fishData
 }

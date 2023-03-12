@@ -78,6 +78,31 @@ func BuildStateWithUser(loginString string, passwordString string) TestServerSta
 	return state
 }
 
+func BuildStateWithFish() TestServerState {
+	state := BuildDefaultState()
+	newFish1 := generateFish("test1", "Rasbora", "Desc 1")
+	state.FishGateway.Fish[newFish1.Id] = newFish1
+	newFish2 := generateFish("test2", "Corydoras", "Desc 2")
+	state.FishGateway.Fish[newFish2.Id] = newFish2
+	newFish3 := generateFish("test3", "Bolivian ram", "Desc 3")
+	state.FishGateway.Fish[newFish3.Id] = newFish3
+	newFish4 := generateFish("test4", "Neon tetra", "Desc 4")
+	state.FishGateway.Fish[newFish4.Id] = newFish4
+	newFish5 := generateFish("test5", "Rummy-nose tetra", "Desc 5")
+	state.FishGateway.Fish[newFish5.Id] = newFish5
+	return state
+}
+
+func generateFish(id string, name string, description string) *app.Fish {
+	return &app.Fish{
+		Id: id,
+		Fish: &domain.Fish{
+			Name:        name,
+			Description: description,
+		},
+	}
+}
+
 func GenerateTestUser(loginString string, passwordString string, state TestServerState) *app.User {
 	hashedPass, _ := state.State.Resolver.SignUpService.AuthService.HashFromPassword(passwordString)
 	owner := &domain.Owner{

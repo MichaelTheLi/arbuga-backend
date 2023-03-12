@@ -2,7 +2,8 @@ type Query {
   me: User
   # TODO Pagination, best practises https://graphql.org/learn/pagination/
   # TODO Better params, pagination, etc
-  fish(substring: String): [Fish!]!
+  fishList(substring: String): [Fish!]!
+  fish(id: ID!): Fish
 }
 
 type Fish {

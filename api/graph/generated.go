@@ -102,8 +102,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Fish func(childComplexity int, substring *string) int
-		Me   func(childComplexity int) int
+		Fish     func(childComplexity int, id string) int
+		FishList func(childComplexity int, substring *string) int
+		Me       func(childComplexity int) int
 	}
 
 	User struct {
@@ -120,7 +121,8 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
-	Fish(ctx context.Context, substring *string) ([]*model.Fish, error)
+	FishList(ctx context.Context, substring *string) ([]*model.Fish, error)
+	Fish(ctx context.Context, id string) (*model.Fish, error)
 }
 
 type executableSchema struct {
@@ -368,7 +370,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Fish(childComplexity, args["substring"].(*string)), true
+		return e.complexity.Query.Fish(childComplexity, args["id"].(string)), true
+
+	case "Query.fishList":
+		if e.complexity.Query.FishList == nil {
+			break
+		}
+
+		args, err := ec.field_Query_fishList_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FishList(childComplexity, args["substring"].(*string)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -559,7 +573,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_fish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_fishList_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
@@ -571,6 +585,21 @@ func (ec *executionContext) field_Query_fish_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["substring"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_fish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2052,6 +2081,68 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_fishList(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_fishList(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FishList(rctx, fc.Args["substring"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Fish)
+	fc.Result = res
+	return ec.marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_fishList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Fish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Fish_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Fish_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_fishList_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_fish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_fish(ctx, field)
 	if err != nil {
@@ -2066,20 +2157,17 @@ func (ec *executionContext) _Query_fish(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Fish(rctx, fc.Args["substring"].(*string))
+		return ec.resolvers.Query().Fish(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Fish)
+	res := resTmp.(*model.Fish)
 	fc.Result = res
-	return ec.marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
+	return ec.marshalOFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_fish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4753,6 +4841,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "fishList":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_fishList(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "fish":
 			field := field
 
@@ -5785,6 +5893,13 @@ func (ec *executionContext) marshalOEcosystemAnalysisCategory2ᚕᚖarbugaᚋbac
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx context.Context, sel ast.SelectionSet, v *model.Fish) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Fish(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
