@@ -1,9 +1,17 @@
 type Query {
   me: User
-  # TODO Pagination, best practises https://graphql.org/learn/pagination/
-  # TODO Better params, pagination, etc
-  fishList(substring: String): [Fish!]!
+  fishList(substring: String, first: Int = 20, after: ID): FishListConnection!
   fish(id: ID!): Fish
+}
+
+type FishListConnection {
+  edges: [FishListEdge!]!
+  pageInfo: PageInfo!
+}
+
+type FishListEdge {
+  cursor: ID!
+  node: Fish
 }
 
 type Fish {
@@ -59,4 +67,10 @@ type Dimensions {
   width: Int!
   height: Int!
   length: Int!
+}
+
+type PageInfo {
+  startCursor: ID!
+  endCursor: ID!
+  hasNextPage: Boolean
 }

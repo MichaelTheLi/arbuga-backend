@@ -3,6 +3,7 @@ package adapters
 import (
 	"arbuga/backend/app"
 	"errors"
+	"sort"
 	"strings"
 )
 
@@ -26,6 +27,10 @@ func (gateway *LocalFishGateway) SearchFishBySubstring(substring string) ([]*app
 			fishListFound = append(fishListFound, fish)
 		}
 	}
+
+	sort.Slice(fishListFound, func(i, j int) bool {
+		return fishListFound[i].Id < fishListFound[j].Id
+	})
 
 	return fishListFound, nil
 }

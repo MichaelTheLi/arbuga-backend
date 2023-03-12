@@ -96,6 +96,16 @@ type ComplexityRoot struct {
 		Name        func(childComplexity int) int
 	}
 
+	FishListConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	FishListEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	LoginResult struct {
 		Token func(childComplexity int) int
 		User  func(childComplexity int) int
@@ -107,9 +117,15 @@ type ComplexityRoot struct {
 		SaveEcosystem      func(childComplexity int, id *string, ecosystem model.EcosystemInput) int
 	}
 
+	PageInfo struct {
+		EndCursor   func(childComplexity int) int
+		HasNextPage func(childComplexity int) int
+		StartCursor func(childComplexity int) int
+	}
+
 	Query struct {
 		Fish     func(childComplexity int, id string) int
-		FishList func(childComplexity int, substring *string) int
+		FishList func(childComplexity int, substring *string, first *int, after *string) int
 		Me       func(childComplexity int) int
 	}
 
@@ -128,7 +144,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
-	FishList(ctx context.Context, substring *string) ([]*model.Fish, error)
+	FishList(ctx context.Context, substring *string, first *int, after *string) (*model.FishListConnection, error)
 	Fish(ctx context.Context, id string) (*model.Fish, error)
 }
 
@@ -343,6 +359,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Fish.Name(childComplexity), true
 
+	case "FishListConnection.edges":
+		if e.complexity.FishListConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.FishListConnection.Edges(childComplexity), true
+
+	case "FishListConnection.pageInfo":
+		if e.complexity.FishListConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.FishListConnection.PageInfo(childComplexity), true
+
+	case "FishListEdge.cursor":
+		if e.complexity.FishListEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.FishListEdge.Cursor(childComplexity), true
+
+	case "FishListEdge.node":
+		if e.complexity.FishListEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.FishListEdge.Node(childComplexity), true
+
 	case "LoginResult.token":
 		if e.complexity.LoginResult.Token == nil {
 			break
@@ -393,6 +437,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SaveEcosystem(childComplexity, args["id"].(*string), args["ecosystem"].(model.EcosystemInput)), true
 
+	case "PageInfo.endCursor":
+		if e.complexity.PageInfo.EndCursor == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.EndCursor(childComplexity), true
+
+	case "PageInfo.hasNextPage":
+		if e.complexity.PageInfo.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.HasNextPage(childComplexity), true
+
+	case "PageInfo.startCursor":
+		if e.complexity.PageInfo.StartCursor == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.StartCursor(childComplexity), true
+
 	case "Query.fish":
 		if e.complexity.Query.Fish == nil {
 			break
@@ -415,7 +480,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FishList(childComplexity, args["substring"].(*string)), true
+		return e.complexity.Query.FishList(childComplexity, args["substring"].(*string), args["first"].(*int), args["after"].(*string)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -642,6 +707,24 @@ func (ec *executionContext) field_Query_fishList_args(ctx context.Context, rawAr
 		}
 	}
 	args["substring"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg2, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg2
 	return args, nil
 }
 
@@ -1981,6 +2064,201 @@ func (ec *executionContext) fieldContext_Fish_description(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _FishListConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.FishListConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FishListConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.FishListEdge)
+	fc.Result = res
+	return ec.marshalNFishListEdge2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListEdgeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FishListConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FishListConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cursor":
+				return ec.fieldContext_FishListEdge_cursor(ctx, field)
+			case "node":
+				return ec.fieldContext_FishListEdge_node(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FishListEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FishListConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.FishListConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FishListConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FishListConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FishListConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FishListEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.FishListEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FishListEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FishListEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FishListEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FishListEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.FishListEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FishListEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Fish)
+	fc.Result = res
+	return ec.marshalOFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FishListEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FishListEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Fish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Fish_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Fish_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoginResult_user(ctx context.Context, field graphql.CollectedField, obj *model.LoginResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoginResult_user(ctx, field)
 	if err != nil {
@@ -2250,6 +2528,135 @@ func (ec *executionContext) fieldContext_Mutation_addFishToEcosystem(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PageInfo_startCursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StartCursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PageInfo_startCursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PageInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PageInfo_endCursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EndCursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PageInfo_endCursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PageInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PageInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_me(ctx, field)
 	if err != nil {
@@ -2314,7 +2721,7 @@ func (ec *executionContext) _Query_fishList(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FishList(rctx, fc.Args["substring"].(*string))
+		return ec.resolvers.Query().FishList(rctx, fc.Args["substring"].(*string), fc.Args["first"].(*int), fc.Args["after"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2325,9 +2732,9 @@ func (ec *executionContext) _Query_fishList(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Fish)
+	res := resTmp.(*model.FishListConnection)
 	fc.Result = res
-	return ec.marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx, field.Selections, res)
+	return ec.marshalNFishListConnection2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_fishList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2338,14 +2745,12 @@ func (ec *executionContext) fieldContext_Query_fishList(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Fish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Fish_name(ctx, field)
-			case "description":
-				return ec.fieldContext_Fish_description(ctx, field)
+			case "edges":
+				return ec.fieldContext_FishListConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_FishListConnection_pageInfo(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Fish", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type FishListConnection", field.Name)
 		},
 	}
 	defer func() {
@@ -4986,6 +5391,73 @@ func (ec *executionContext) _Fish(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var fishListConnectionImplementors = []string{"FishListConnection"}
+
+func (ec *executionContext) _FishListConnection(ctx context.Context, sel ast.SelectionSet, obj *model.FishListConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fishListConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FishListConnection")
+		case "edges":
+
+			out.Values[i] = ec._FishListConnection_edges(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+
+			out.Values[i] = ec._FishListConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var fishListEdgeImplementors = []string{"FishListEdge"}
+
+func (ec *executionContext) _FishListEdge(ctx context.Context, sel ast.SelectionSet, obj *model.FishListEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fishListEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FishListEdge")
+		case "cursor":
+
+			out.Values[i] = ec._FishListEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "node":
+
+			out.Values[i] = ec._FishListEdge_node(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var loginResultImplementors = []string{"LoginResult"}
 
 func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionSet, obj *model.LoginResult) graphql.Marshaler {
@@ -5056,6 +5528,45 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		}
 	}
 	out.Dispatch()
+	return out
+}
+
+var pageInfoImplementors = []string{"PageInfo"}
+
+func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PageInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PageInfo")
+		case "startCursor":
+
+			out.Values[i] = ec._PageInfo_startCursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "endCursor":
+
+			out.Values[i] = ec._PageInfo_endCursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hasNextPage":
+
+			out.Values[i] = ec._PageInfo_hasNextPage(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
 	return out
 }
 
@@ -5670,7 +6181,31 @@ func (ec *executionContext) marshalNEcosystemUpdateResult2ᚖarbugaᚋbackendᚋ
 	return ec._EcosystemUpdateResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Fish) graphql.Marshaler {
+func (ec *executionContext) marshalNFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx context.Context, sel ast.SelectionSet, v *model.Fish) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Fish(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFishListConnection2arbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListConnection(ctx context.Context, sel ast.SelectionSet, v model.FishListConnection) graphql.Marshaler {
+	return ec._FishListConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFishListConnection2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListConnection(ctx context.Context, sel ast.SelectionSet, v *model.FishListConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FishListConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFishListEdge2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.FishListEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5694,7 +6229,7 @@ func (ec *executionContext) marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx, sel, v[i])
+			ret[i] = ec.marshalNFishListEdge2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5714,14 +6249,14 @@ func (ec *executionContext) marshalNFish2ᚕᚖarbugaᚋbackendᚋapiᚋgraphᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNFish2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFish(ctx context.Context, sel ast.SelectionSet, v *model.Fish) graphql.Marshaler {
+func (ec *executionContext) marshalNFishListEdge2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐFishListEdge(ctx context.Context, sel ast.SelectionSet, v *model.FishListEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._Fish(ctx, sel, v)
+	return ec._FishListEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -5752,6 +6287,16 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNPageInfo2ᚖarbugaᚋbackendᚋapiᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PageInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

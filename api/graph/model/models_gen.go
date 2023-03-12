@@ -78,9 +78,25 @@ type Fish struct {
 	Description string `json:"description"`
 }
 
+type FishListConnection struct {
+	Edges    []*FishListEdge `json:"edges"`
+	PageInfo *PageInfo       `json:"pageInfo"`
+}
+
+type FishListEdge struct {
+	Cursor string `json:"cursor"`
+	Node   *Fish  `json:"node"`
+}
+
 type LoginResult struct {
 	User  *User   `json:"user"`
 	Token *string `json:"token"`
+}
+
+type PageInfo struct {
+	StartCursor string `json:"startCursor"`
+	EndCursor   string `json:"endCursor"`
+	HasNextPage *bool  `json:"hasNextPage"`
 }
 
 type User struct {

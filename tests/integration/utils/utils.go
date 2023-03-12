@@ -94,6 +94,8 @@ func BuildStateWithFish(state *TestServerState) TestServerState {
 	state.FishGateway.Fish[newFish4.Id] = newFish4
 	newFish5 := generateFish("test5", "Rummy-nose tetra", "Desc 5")
 	state.FishGateway.Fish[newFish5.Id] = newFish5
+	newFish6 := generateFish("test6", "Yet another tetra", "Desc 6")
+	state.FishGateway.Fish[newFish6.Id] = newFish6
 	return *state
 }
 
